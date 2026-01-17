@@ -8,6 +8,7 @@
     "db:generate": "bunx --bun drizzle-kit generate"
   },
   "dependencies": {
+    "@elysiajs/cors": "^1.4.1",
     "bee-queue": "^2.0.0",
     "drizzle-orm": "^0.45.1",
     "elysia": "latest",
