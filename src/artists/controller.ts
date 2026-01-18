@@ -16,7 +16,15 @@ export const artistRouter = new Elysia({prefix: '/artist'})
                     columns: {},
                     with: {
                         song: {
-                            columns: { filename: false }
+                            columns: { filename: false },
+                            with: {
+                                authors:  {
+                                    columns: {},
+                                    with: {
+                                        artist: true
+                                    }
+                                }
+                            }
                         }
                     }
                 }
