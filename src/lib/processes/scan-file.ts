@@ -4,7 +4,7 @@ import { Job } from "bee-queue"
 import { db } from "../../database"
 import { artists, songs, songsToArtists } from "../../database/schema"
 import { filesDir } from "../../constants"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 export interface ScanFileData {
     filename: string
@@ -25,23 +25,35 @@ export async function scanLocalFile(job: Job<ScanFileData>) {
 
     const title = metadata.common.title || filename
 
-    const insertedSong = (await db.insert(songs).values({
-        title,
-        filename,
-        year: metadata.common.year
-    }).returning())[0]
+    let song = await db.query.songs.findFirst({where: eq(songs.filename, filename), with: { authors: true } })
+    if(!song){
+        const newSong = (await db.insert(songs).values({
+            title,
+            filename,
+            year: metadata.common.year
+        }).returning())[0]
+
+        song = {...newSong, authors: [] }
+    }
 
     const artistTag = metadata.common.artist
     if(artistTag){
         const artistNames = parseArtistTag(artistTag)
         for(let art of artistNames){
-            const storedArtist = await db.query.artists.findFirst({where: eq(artists.name, art)})
-            if(storedArtist){
-                await db.insert(songsToArtists).values({songId: insertedSong.id, artistId: storedArtist.id})
-            }else{
+            let artist = await db.query.artists.findFirst({where: eq(artists.name, art)})
+            if(!artist){
                 const newArtist = (await db.insert(artists).values({name: art}).returning())[0]
-                await db.insert(songsToArtists).values({songId: insertedSong.id, artistId: newArtist.id})
+                artist = newArtist
             }
+
+            const songArtistRelation = await db.query.songsToArtists.findFirst({where: and(
+                eq(songsToArtists.songId, song.id),
+                eq(songsToArtists.artistId, artist.id)
+            )})
+
+            if(!songArtistRelation){
+                await db.insert(songsToArtists).values({songId: song.id, artistId: artist.id})
+            }  
         }
     }
 }
