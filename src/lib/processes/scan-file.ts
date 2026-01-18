@@ -10,6 +10,11 @@ export interface ScanFileData {
     filename: string
 }
 
+function parseArtistTag(artistTag: string): string[]{
+    const artistNames = artistTag.split(',')
+    return artistNames.map(art => art.trim())
+}
+
 export async function scanLocalFile(job: Job<ScanFileData>) {
     const { data } = job
     const { filename } = data
@@ -28,12 +33,15 @@ export async function scanLocalFile(job: Job<ScanFileData>) {
 
     const artistTag = metadata.common.artist
     if(artistTag){
-        const storedArtist = await db.query.artists.findFirst({where: eq(artists.name, artistTag)})
-        if(storedArtist){
-            await db.insert(songsToArtists).values({songId: insertedSong.id, artistId: storedArtist.id})
-        }else{
-            const newArtist = (await db.insert(artists).values({name: artistTag}).returning())[0]
-            await db.insert(songsToArtists).values({songId: insertedSong.id, artistId: newArtist.id})
+        const artistNames = parseArtistTag(artistTag)
+        for(let art of artistNames){
+            const storedArtist = await db.query.artists.findFirst({where: eq(artists.name, art)})
+            if(storedArtist){
+                await db.insert(songsToArtists).values({songId: insertedSong.id, artistId: storedArtist.id})
+            }else{
+                const newArtist = (await db.insert(artists).values({name: art}).returning())[0]
+                await db.insert(songsToArtists).values({songId: insertedSong.id, artistId: newArtist.id})
+            }
         }
     }
 }
