@@ -10,7 +10,14 @@ import { file } from "bun";
 
 export const songRouter = new Elysia({prefix: '/song'})
     .get('', async () => {
-        const songs = await db.query.songs.findMany()
+        const songs = await db.query.songs.findMany({
+            with: {
+                authors: {
+                    columns: {},
+                    with: { artist: true }
+                }
+            }
+        })
         return {songs}
     })
     .get('/scan', async () => {
@@ -46,6 +53,12 @@ export const songRouter = new Elysia({prefix: '/song'})
             where: eq(songs.id, params.id),
             columns: {
                 filename: false
+            },
+            with: {
+                authors: {
+                    columns: {},
+                    with: { artist: true }
+                }
             }
         })
 
