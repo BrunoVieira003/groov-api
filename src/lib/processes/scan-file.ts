@@ -10,11 +10,6 @@ export interface ScanFileData {
     filename: string
 }
 
-function parseArtistTag(artistTag: string): string[]{
-    const artistNames = artistTag.split(',')
-    return artistNames.map(art => art.trim())
-}
-
 export async function scanLocalFile(job: Job<ScanFileData>) {
     const { data } = job
     const { filename } = data
@@ -36,10 +31,9 @@ export async function scanLocalFile(job: Job<ScanFileData>) {
         song = {...newSong, authors: [] }
     }
 
-    const artistTag = metadata.common.artist
-    if(artistTag){
-        const artistNames = parseArtistTag(artistTag)
-        for(let art of artistNames){
+    const artistsTag = metadata.common.artists
+    if(artistsTag){
+        for(let art of artistsTag){
             let artist = await db.query.artists.findFirst({where: eq(artists.name, art)})
             if(!artist){
                 const newArtist = (await db.insert(artists).values({name: art}).returning())[0]
