@@ -4,11 +4,13 @@ import { migrate } from 'drizzle-orm/bun-sql/migrator'
 import { db } from "./database";
 import cors from "@elysiajs/cors";
 import { artistRouter } from "./artists/controller";
+import { taskRouter } from "./tasks/controller";
 
 await migrate(db, { migrationsFolder: '/drizzle' })
 
 const app = new Elysia()
-.use(cors())
+  .use(cors())
+  .use(taskRouter)
   .use(songRouter)
   .use(artistRouter)
   .listen(3000);
