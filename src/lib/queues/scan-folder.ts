@@ -1,10 +1,10 @@
 import BeeQueue from "bee-queue";
-import { scanLocalFile, ScanFileData } from "../processes/scan-file";
+import { scanLocalFolder, ScanFileData } from "../processes/scan-folder";
 import { env } from "bun";
 
 const scanFileQueue = new BeeQueue<ScanFileData>('scanFile', { redis: env.REDIS_URL })
 
-scanFileQueue.process(scanLocalFile)
+scanFileQueue.process(scanLocalFolder)
 
 scanFileQueue.on('job succeeded', (jobId) => {
     console.log(jobId, ' success')

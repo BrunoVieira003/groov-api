@@ -5,10 +5,8 @@ import { filesDir } from '../constants';
 export default class TaskService{
     static async createScanFolderTask(){
         const filenames = fs.readdirSync(filesDir)
-        for (let f of filenames) {
-            await scanFolderQueue.createJob({ filename: f }).save()
-        }
+        const job = await scanFolderQueue.createJob({filenames}).save()
 
-        return { detectedFiles: filenames.length }
+        return { detectedFiles: filenames.length, taskId: job.id }
     }
 }
