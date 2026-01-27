@@ -54,7 +54,8 @@ export async function scanLocalFolder(job: Job<ScanFileData>) {
             }
         }
         
-        job.reportProgress({current: ((filenames.findIndex(f => f === filename) + 1) / filenames.length) * 100})
+        job.reportProgress({status: 'in-progress', progress: ((filenames.findIndex(f => f === filename) + 1) / filenames.length) * 100})
+        await Bun.sleep(3000)
     }
 
 }
