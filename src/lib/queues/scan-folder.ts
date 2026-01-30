@@ -1,8 +1,8 @@
 import BeeQueue from "bee-queue";
-import { scanLocalFolder, ScanFileData } from "../processes/scan-folder";
+import { scanLocalFolder, ScanFolderData } from "../processes/scan-folder";
 import { env } from "bun";
 
-const scanFileQueue = new BeeQueue<ScanFileData>('scanFile', { redis: env.REDIS_URL })
+const scanFileQueue = new BeeQueue<ScanFolderData>('scanFolder', { redis: env.REDIS_URL })
 
 scanFileQueue.process(scanLocalFolder)
 
