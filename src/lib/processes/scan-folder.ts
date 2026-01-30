@@ -32,7 +32,6 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
         
         const title = metadata.common.title || filename
         const picture = getPicture(metadata.common.picture)
-        console.log(picture?.format.split('/')[1])
         const song = (await db.insert(songs)
             .values({
                 title,

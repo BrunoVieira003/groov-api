@@ -79,7 +79,6 @@ export default class SongService {
         }
 
         const filepath = path.join(imagesDir, `${song.id}.${song.coverArtFormat}`)
-        console.log(filepath)
         if (!fs.existsSync(filepath)) {
             throw new NotFoundError('Cover art file not found')
         }
