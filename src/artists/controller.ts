@@ -34,5 +34,22 @@ export const artistRouter = new Elysia({prefix: '/artist'})
             return new NotFoundError('Song not found')
         }
 
-        return { artist }
+        const songs = artist.songs.map(s => {
+            const song = s.song
+
+            return {
+                id: song.id,
+                title: song.title,
+                year: song.year,
+                authors: song.authors.map(a => a.artist)
+            }
+        })
+
+        const result = {
+            id: artist.id,
+            name: artist.name,
+            songs
+        }
+
+        return result
     })
