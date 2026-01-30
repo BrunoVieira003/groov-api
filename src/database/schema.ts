@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
-import { pgTable, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, primaryKey, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const songs = pgTable('songs', {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar('title').notNull(),
     year: smallint(),
-    filename: varchar('filename').notNull(),
+    filename: varchar('filename').notNull().unique('song_filename_unique'),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
     createdAt: timestamp('created_at').notNull().defaultNow(),
 });
@@ -16,7 +16,7 @@ export const songsRelations = relations(songs, ({many}) => ({
 
 export const artists = pgTable('artists', {
     id: uuid().primaryKey().defaultRandom(),
-    name: varchar('name').notNull()
+    name: varchar('name').notNull().unique('artist_name_unique')
 })
 
 export const artistsRelations = relations(artists, ({many}) => ({
@@ -26,7 +26,9 @@ export const artistsRelations = relations(artists, ({many}) => ({
 export const songsToArtists = pgTable('songs_to_artists', {
     songId: uuid().notNull().references(() => songs.id),
     artistId: uuid().notNull().references(() => artists.id)
-})
+}, (t) => [
+    primaryKey({columns: [t.songId, t.artistId]})
+])
 
 export const songsToArtistsRelations = relations(songsToArtists, ({one}) => ({
     song: one(songs, {
