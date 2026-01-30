@@ -8,21 +8,11 @@ function createTaskStream(id: string): ReadableStream<string>{
             const job = await scanFileQueue.getJob(id)
             if(["succeeded", "failed"].includes(job.status)){
                 controller.close()
+                return
             }
 
-            job.on('progress', (progress) => {
-                console.log(progress)
-                controller.enqueue(String(progress))
-            })
-
-            job.on('succeeded', () => {
-                controller.enqueue(String({status: 'success', progress: 100}))
-                controller.close()
-            })
-
-            job.on('failed', () => {
-                controller.enqueue(String({status: 'failed', progress: 100}))
-                controller.close()
+            job.once('progress', (progress) => {
+                controller.enqueue(JSON.stringify(progress))
             })
         },
         cancel(){
