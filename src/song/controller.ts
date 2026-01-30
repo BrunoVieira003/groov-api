@@ -15,6 +15,14 @@ export const songRouter = new Elysia({ prefix: '/songs' })
         return songFile
 
     })
+    .get('/:id/cover', async ({ params, set }) => {
+        const songFile = await SongService.getCoverBySongId(params.id)
+
+        set.headers["content-type"] = songFile.type
+
+        return songFile
+
+    })
     .get('/:id/stat', async ({ params }) => {
         const song = await SongService.getSongById(params.id)
 

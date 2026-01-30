@@ -4,7 +4,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { eq } from "drizzle-orm";
 import { songs } from "../database/schema";
-import { filesDir } from "../constants";
+import { filesDir, imagesDir } from "../constants";
 
 export default class SongService {
     static async getAll() {
@@ -70,5 +70,20 @@ export default class SongService {
             updatedAt: song.updatedAt,
             authors: song.authors.map(aut => aut.artist)
         }
+    }
+
+    static async getCoverBySongId(id: string) {
+        const song = await db.query.songs.findFirst({ where: eq(songs.id, id) })
+        if (!song) {
+            throw new NotFoundError('Song not found')
+        }
+
+        const filepath = path.join(imagesDir, `${song.id}.${song.coverArtFormat}`)
+        console.log(filepath)
+        if (!fs.existsSync(filepath)) {
+            throw new NotFoundError('Cover art file not found')
+        }
+
+        return file(filepath)
     }
 }
