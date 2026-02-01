@@ -6,7 +6,7 @@ COPY bun.lock package.json tsconfig.json ./
 RUN bun install
 
 COPY src ./src
-RUN bun build src/index.ts --outdir dist
+RUN bun run build-api
 
 # --- runtime stage ---
 FROM oven/bun:1.1-slim
