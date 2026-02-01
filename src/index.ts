@@ -6,6 +6,11 @@ import cors from "@elysiajs/cors";
 import { artistRouter } from "./artists/controller";
 import { taskRouter } from "./tasks/controller";
 
+console.info("Bun env", Bun.env)
+console.log("Bun env", Bun.env)
+console.error("Bun env", Bun.env)
+console.warn("Bun env", Bun.env)
+console.debug("Bun env", Bun.env)
 await migrate(db, { migrationsFolder: '/drizzle' })
 
 const app = new Elysia()
