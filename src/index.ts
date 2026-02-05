@@ -6,7 +6,12 @@ import cors from "@elysiajs/cors";
 import { artistRouter } from "./artists/controller";
 import { taskRouter } from "./tasks/controller";
 
-await migrate(db, { migrationsFolder: './drizzle' })
+try{
+  await migrate(db, { migrationsFolder: './drizzle' })
+  console.log('Migration sucessfully')
+}catch(e){
+  console.log(e)
+}
 
 const app = new Elysia()
   .use(cors())
