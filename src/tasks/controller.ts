@@ -10,8 +10,3 @@ export const taskRouter = new Elysia({prefix: '/tasks'})
 
         return result
     })
-    .post('empty-db', async () => {
-        await db.delete(songsToArtists)
-        await db.delete(artists)
-        await db.delete(artists)
-    })
