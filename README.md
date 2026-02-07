@@ -1,15 +1,34 @@
-# Elysia with Bun runtime
+# Groov Api
+Groov Api is a the backend used for Groov project, a web modern music player to listen to your songs
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
-```
+## Features
+- ✅ Song metadata
+- ✅ Artists
+- ✅ Song folder scanning
+- ✅ Song cover art
+- 💭 Playlists
+- 💭 Albums
+- 💭 Fuzzy search
+- 💭 Task feedback
+- 💭 Upload audio file
+- 💭 Unsynced Lyrics
+- 💭 Synced Lyrics
+- 💭 Internacionalization
+
+## Supported files
+- ✅ mp3
+- 💭 ogg
+- 💭 flac
+- 💭 wav
+
+## QoL Todo
+- DTO Mapping
+- Pagination
+- Filtering
+- Dockerfile
 
 ## Development
 To start the development server run:
 ```bash
 bun run dev
 ```
-
-Open http://localhost:3000/ with your browser to see the result.
