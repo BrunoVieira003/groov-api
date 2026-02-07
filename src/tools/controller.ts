@@ -8,6 +8,6 @@ export const toolsRouter = new Elysia()
         const artistResults = await ArtistService.search(query.q)
         return {
             songs: songResults,
-            artistResults: artistResults
+            artists: artistResults
         }
     })
