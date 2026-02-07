@@ -4,6 +4,7 @@ import { Job } from "bee-queue"
 import { db } from "../../database"
 import { artists, songs, songsToArtists } from "../../database/schema"
 import { filesDir, imagesDir } from "../../constants"
+import {Vibrant} from 'node-vibrant/node'
 
 export interface ScanFolderData {
     filenames: string[]
@@ -26,18 +27,31 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
     const { filenames } = data
 
     for (let filename of filenames) {
+        console.log(filename)
         const filepath = path.join(filesDir, filename)
         
         const metadata = await parseFile(filepath)
         
         const title = metadata.common.title || filename
+
         const picture = getPicture(metadata.common.picture)
+
+        let prominentColor: string | null = null
+
+        if(picture){
+            const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
+            if(pallete.Vibrant){
+                prominentColor = pallete.Vibrant.hex
+            }
+        }
+
         const song = (await db.insert(songs)
             .values({
                 title,
                 filename,
                 year: metadata.common.year,
-                coverArtFormat: getPictureFormat(picture)
+                coverArtFormat: getPictureFormat(picture),
+                color: prominentColor,
             })
             .onConflictDoUpdate({
                 target: songs.filename,

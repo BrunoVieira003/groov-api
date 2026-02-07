@@ -7,6 +7,7 @@ export const songs = pgTable('songs', {
     year: smallint(),
     filename: varchar('filename').notNull().unique('song_filename_unique'),
     coverArtFormat: varchar('cover_art_format'),
+    color: varchar('color'),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
     createdAt: timestamp('created_at').notNull().defaultNow(),
 });

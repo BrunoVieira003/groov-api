@@ -6,6 +6,7 @@ export default class TaskService{
     static async createScanFolderTask(){
         const filenames = fs.readdirSync(filesDir)
         const job = await scanFolderQueue.createJob({filenames}).save()
+        job.on('failed', console.log)
 
         return { detectedFiles: filenames.length, taskId: job.id }
     }

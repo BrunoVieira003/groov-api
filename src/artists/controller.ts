@@ -41,6 +41,7 @@ export const artistRouter = new Elysia({prefix: '/artist'})
                 id: song.id,
                 title: song.title,
                 year: song.year,
+                color: song.color,
                 authors: song.authors.map(a => a.artist)
             }
         })

@@ -22,6 +22,7 @@ export default class SongService {
                 id: song.id,
                 title: song.title,
                 year: song.year,
+                color: song.color,
                 createdAt: song.createdAt,
                 updatedAt: song.updatedAt,
                 authors: song.authors.map(aut => aut.artist)
@@ -66,6 +67,7 @@ export default class SongService {
         return {
             id: song.id,
             title: song.title,
+            color: song.color,
             createdAt: song.createdAt,
             updatedAt: song.updatedAt,
             authors: song.authors.map(aut => aut.artist)
