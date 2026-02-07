@@ -2,13 +2,13 @@ import { file, NotFoundError } from "elysia";
 import { db } from "../database";
 import path from 'node:path';
 import fs from 'node:fs';
-import { eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import { songs } from "../database/schema";
 import { filesDir, imagesDir } from "../constants";
 
 export default class SongService {
     static async getAll() {
-        const songs = await db.query.songs.findMany({
+        const songList = await db.query.songs.findMany({
             with: {
                 authors: {
                     columns: {},
@@ -17,7 +17,7 @@ export default class SongService {
             }
         })
 
-        const result = songs.map((song) => {
+        const result = songList.map((song) => {
             return {
                 id: song.id,
                 title: song.title,
@@ -86,5 +86,33 @@ export default class SongService {
         }
 
         return file(filepath)
+    }
+
+    static async search(title: string){
+        const songList = await db.query.songs.findMany({ 
+            where: ilike(songs.title, `%${title}%`), 
+            with: {
+                authors: {
+                    columns: {}, 
+                    with: {
+                        artist: true 
+                    }
+                }
+            } 
+        })
+
+        const result = songList.map((song) => {
+            return {
+                id: song.id,
+                title: song.title,
+                year: song.year,
+                color: song.color,
+                createdAt: song.createdAt,
+                updatedAt: song.updatedAt,
+                authors: song.authors.map(aut => aut.artist)
+            }
+        })
+
+        return result
     }
 }
