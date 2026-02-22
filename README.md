@@ -10,7 +10,7 @@ Groov Api is a the backend used for Groov project, a web modern music player to 
 - 💭 Albums
 - ✅ Fuzzy search
 - 💭 Task feedback
-- 💭 Upload audio file
+- ✅ Upload audio file
 - 💭 Unsynced Lyrics
 - 💭 Synced Lyrics
 - 💭 Internacionalization
