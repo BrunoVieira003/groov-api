@@ -1,14 +1,12 @@
 import { Vibrant } from "node-vibrant/node";
 import { Job } from "bee-queue";
-import { IPicture, parseBuffer, parseBlob, parseFile } from "music-metadata";
+import { IPicture, parseFile } from "music-metadata";
 import { db } from "../../database";
 import { artists, songs, songsToArtists } from "../../database/schema";
 import path from "node:path"
 import { filesDir, imagesDir } from "../../constants";
-import { write } from "bun";
 
 export interface ReadFileData {
-    file: Blob,
     filename: string
 }
 
@@ -26,10 +24,9 @@ function getPictureFormat(picture: IPicture | undefined){
 
 export async function readFileData(job: Job<ReadFileData>){
     const { data } = job
-    const { file, filename } = data
-
+    const { filename } = data
+    
     const filepath = path.join(filesDir, filename)
-    await write(filepath, file)
 
     const metadata = await parseFile(filepath);
 
