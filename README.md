@@ -1,7 +1,15 @@
 # Groov Api
 Groov Api is a the backend used for Groov project, a web modern music player to listen to your songs
 
+Made for fun
+
 ## Features
+Here's a list of all features that may be available in this project
+
+✅ Available
+⏳ In progress
+💭 Planned
+
 - ✅ Song metadata
 - ✅ Artists
 - ✅ Song folder scanning
