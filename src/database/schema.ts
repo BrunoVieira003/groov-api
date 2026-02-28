@@ -13,7 +13,8 @@ export const songs = pgTable('songs', {
 });
 
 export const songsRelations = relations(songs, ({many}) => ({
-    authors: many(songsToArtists)
+    authors: many(songsToArtists),
+    playlists: many(songsToPlaylists)
 }))
 
 export const artists = pgTable('artists', {
@@ -41,4 +42,29 @@ export const songsToArtistsRelations = relations(songsToArtists, ({one}) => ({
         fields: [songsToArtists.artistId],
         references: [artists.id]
     })
+}))
+
+export const playlists = pgTable('playlists', {
+    id: uuid().primaryKey().defaultRandom(),
+    title: varchar('title').notNull(),
+})
+
+export const playlistsRelations = relations(playlists, ({many}) => ({
+    songs: many(songsToPlaylists)
+}))
+
+export const songsToPlaylists = pgTable('songs_to_playlists', {
+    songId: uuid().notNull().references(() => songs.id),
+    playlistId: uuid().notNull().references(() => playlists.id)
+})
+
+export const songsToPlaylistsRelations = relations(songsToPlaylists, ({one}) => ({
+    song: one(songs, {
+        fields: [songsToPlaylists.songId],
+        references: [songs.id]
+    }),
+    playlist: one(playlists, {
+        fields: [songsToPlaylists.playlistId],
+        references: [playlists.id]
+    }),
 }))
