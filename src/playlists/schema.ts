@@ -4,6 +4,10 @@ export const createPlaylistSchema = t.Object({
     title: t.String()
 })
 
+export const updatePlaylistSchema = t.Object({
+    title: t.Optional(t.String()),
+})
+
 export const addSongSchema = t.Object({
     songId: t.String({format: 'uuid'})
 })

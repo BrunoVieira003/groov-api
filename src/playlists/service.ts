@@ -3,6 +3,11 @@ import { db } from "../database";
 import { playlists, songs, songsToPlaylists } from "../database/schema";
 import { NotFoundError } from "elysia";
 
+interface UpdatePlaylist{
+    title?: string
+}
+
+
 export class PlaylistService{
     static async create(title: string){
         const [playlist] = await db.insert(playlists).values({
@@ -48,6 +53,16 @@ export class PlaylistService{
         }
 
         return result
+    }
+
+    static async update(playlistId: string, data: UpdatePlaylist){
+        const playlist = await this.getById(playlistId)
+        if(data.title){
+            playlist.title = data.title
+        }
+
+        await db.update(playlists).set(playlist)
+
     }
 
     static async addSong(playlistId: string, songId: string){
