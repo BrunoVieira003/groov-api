@@ -22,6 +22,11 @@ export const playlistRouter = new Elysia({prefix: 'playlists'})
         await PlaylistService.update(params.id, body)
     }, {body: updatePlaylistSchema})
 
+    .delete(':id', async ({params, body}) => {
+        await PlaylistService.delete(params.id)
+        return status(204)
+    })
+
     .post(':id/song', async ({params, body}) => {
         await PlaylistService.addSong(params.id, body.songId)
         return status(201)

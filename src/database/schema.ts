@@ -54,14 +54,14 @@ export const playlistsRelations = relations(playlists, ({many}) => ({
 }))
 
 export const songsToPlaylists = pgTable('songs_to_playlists', {
-    songId: uuid().notNull().references(() => songs.id),
-    playlistId: uuid().notNull().references(() => playlists.id)
+    songId: uuid().notNull().references(() => songs.id, {onDelete: 'cascade'}),
+    playlistId: uuid().notNull().references(() => playlists.id, {onDelete: 'cascade'})
 })
 
 export const songsToPlaylistsRelations = relations(songsToPlaylists, ({one}) => ({
     song: one(songs, {
         fields: [songsToPlaylists.songId],
-        references: [songs.id]
+        references: [songs.id],
     }),
     playlist: one(playlists, {
         fields: [songsToPlaylists.playlistId],

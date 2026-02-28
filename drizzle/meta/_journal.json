@@ -36,6 +36,13 @@
       "when": 1772305892703,
       "tag": "0004_add_playlists",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772318923082,
+      "tag": "0005_playlist_delete_related_entries",
+      "breakpoints": true
     }
   ]
 }

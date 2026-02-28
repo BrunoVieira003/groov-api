@@ -6,6 +6,7 @@
     "dev": "bun run --watch src/index.ts",
     "db:push": "bunx --bun drizzle-kit push",
     "db:generate": "bunx --bun drizzle-kit generate",
+    "db:migrate": "bunx --bun drizzle-kit migrate",
     "db:studio": "bunx --bun drizzle-kit studio"
   },
   "dependencies": {
