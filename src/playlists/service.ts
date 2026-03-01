@@ -34,6 +34,12 @@ export class PlaylistService{
                                 createdAt: false,
                                 updatedAt: false,
                                 coverArtFormat: false
+                            },
+                            with: {
+                                authors: {
+                                    columns: {},
+                                    with: {artist: true}
+                                }
                             }
                         }
                     },
@@ -49,7 +55,7 @@ export class PlaylistService{
         const result = {
             id: playlist.id,
             title: playlist.title,
-            songs: playlist.songs.map(son => son.song)
+            songs: playlist.songs.map(son => ({...son.song, authors: son.song.authors.map(aut => aut.artist)}))
         }
 
         return result

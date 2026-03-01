@@ -10,7 +10,7 @@ export const playlistRouter = new Elysia({prefix: 'playlists'})
 
     .get('', async () => {
         const playlists = await PlaylistService.getAll()
-        return playlists
+        return { playlists }
     })
 
     .get(':id', async ({params}) => {
@@ -22,7 +22,7 @@ export const playlistRouter = new Elysia({prefix: 'playlists'})
         await PlaylistService.update(params.id, body)
     }, {body: updatePlaylistSchema})
 
-    .delete(':id', async ({params, body}) => {
+    .delete(':id', async ({params}) => {
         await PlaylistService.delete(params.id)
         return status(204)
     })
