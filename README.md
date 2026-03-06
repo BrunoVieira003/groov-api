@@ -14,7 +14,7 @@ Here's a list of all features that may be available in this project
 - ✅ Artists
 - ✅ Song folder scanning
 - ✅ Song cover art
-- 💭 Playlists
+- ✅ Playlists
 - 💭 Albums
 - ✅ Fuzzy search
 - 💭 Task feedback
