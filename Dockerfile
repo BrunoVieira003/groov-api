@@ -6,6 +6,7 @@ RUN bun install
 
 COPY . .
 RUN bun run build
+RUN pwd && ls -la
 
 FROM oven/bun:latest
 COPY --from=build ./package.json ./
