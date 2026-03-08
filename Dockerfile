@@ -9,10 +9,10 @@ RUN bun run build
 RUN pwd && ls -la
 
 FROM oven/bun:latest
-COPY --from=build ./package.json ./
-COPY --from=build ./node_modules ./node_modules
-COPY --from=build ./drizzle ./drizzle
-COPY --from=build ./build ./build
+COPY --from=build /usr/src/app/package.json ./
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/drizzle ./drizzle
+COPY --from=build /usr/src/app/build ./build
 
 EXPOSE 3000
 
