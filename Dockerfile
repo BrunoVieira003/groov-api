@@ -1,19 +1,18 @@
 FROM oven/bun:latest as build
+WORKDIR /usr/src/app
 
 COPY package.json bun.lock ./
 RUN bun install
 
-COPY ./src ./src
-COPY tsconfig.json ./tsconfig.json
-COPY ./drizzle ./drizzle
+COPY . .
 RUN bun run build
-
-RUN ls
 
 FROM oven/bun:latest
 COPY --from=build ./package.json ./
 COPY --from=build ./node_modules ./node_modules
 COPY --from=build ./drizzle ./drizzle
 COPY --from=build ./build ./build
+
+EXPOSE 3000
 
 CMD ["bun", "run", "./build/index.js"]
