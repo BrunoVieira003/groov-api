@@ -4,6 +4,7 @@ COPY package.json bun.lock ./
 RUN bun install
 
 COPY ./src ./src
+COPY tsconfig.json ./tsconfig.json
 COPY ./drizzle ./drizzle
 RUN bun run build
 
