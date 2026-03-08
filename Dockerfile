@@ -8,6 +8,8 @@ COPY tsconfig.json ./tsconfig.json
 COPY ./drizzle ./drizzle
 RUN bun run build
 
+RUN ls
+
 FROM oven/bun:latest
 COPY --from=build ./package.json ./
 COPY --from=build ./node_modules ./node_modules
