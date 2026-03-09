@@ -85,7 +85,7 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
                 .onConflictDoNothing()
         }
 
-        job.reportProgress({ status: 'in-progress', progress: ((filenames.findIndex(f => f === filename) + 1) / filenames.length) * 100 })
+        job.reportProgress({ status: 'running', progress: ((filenames.findIndex(f => f === filename) + 1) / filenames.length) * 100 })
     }
 
 }
