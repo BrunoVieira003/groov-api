@@ -43,6 +43,13 @@
       "when": 1772318923082,
       "tag": "0005_playlist_delete_related_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773104099206,
+      "tag": "0006_add_on_cascade_on_delete_songs_to_artists",
+      "breakpoints": true
     }
   ]
 }
