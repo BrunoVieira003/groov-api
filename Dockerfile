@@ -10,6 +10,7 @@ RUN bun install
 
 COPY ./src ./src
 COPY ./drizzle ./drizzle
+COPY ./node_modules ./node_modules
 
 ENV NODE_ENV=production
 
@@ -26,6 +27,7 @@ WORKDIR /app
 
 COPY --from=build /app/server server
 COPY --from=build /app/drizzle drizzle
+COPY --from=build /app/node_modules node_modules
 
 ENV NODE_ENV=production
 
