@@ -10,14 +10,9 @@ RUN bun install
 
 COPY ./src ./src
 COPY ./drizzle ./drizzle
-COPY ./node_modules ./node_modules
 
-RUN bun build \
-	--compile \
-	--minify-whitespace \
-	--minify-syntax \
-	--outfile server \
-	src/index.ts
+RUN bun run build
+RUN ls
 
 FROM gcr.io/distroless/base
 
@@ -25,7 +20,6 @@ WORKDIR /app
 
 COPY --from=build /app/server server
 COPY --from=build /app/drizzle drizzle
-COPY --from=build /app/node_modules node_modules
 
 ENV NODE_ENV=production
 
