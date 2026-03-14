@@ -12,8 +12,6 @@ COPY ./src ./src
 COPY ./drizzle ./drizzle
 COPY ./node_modules ./node_modules
 
-ENV NODE_ENV=production
-
 RUN bun build \
 	--compile \
 	--minify-whitespace \
