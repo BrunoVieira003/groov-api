@@ -18,7 +18,7 @@ FROM oven/bun:latest
 
 WORKDIR /app
 
-COPY --from=build /app/build/server server
+COPY --from=build /app/build/server.js server.js
 COPY --from=build /app/drizzle drizzle
 
 ENV NODE_ENV=production
