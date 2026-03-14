@@ -1,19 +1,32 @@
-FROM oven/bun:latest as build
-WORKDIR /usr/src/app
+FROM oven/bun AS build
 
-COPY package.json bun.lock ./
+WORKDIR /app
+
+# Cache packages installation
+COPY package.json package.json
+COPY bun.lock bun.lock
+
 RUN bun install
 
-COPY . .
-RUN bun run build
-RUN pwd && ls -la
+COPY ./src ./src
 
-FROM oven/bun:latest
-COPY --from=build /usr/src/app/package.json ./
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/drizzle ./drizzle
-COPY --from=build /usr/src/app/build ./build
+ENV NODE_ENV=production
+
+RUN bun build \
+	--compile \
+	--minify-whitespace \
+	--minify-syntax \
+	--outfile server \
+	src/index.ts
+
+FROM gcr.io/distroless/base
+
+WORKDIR /app
+
+COPY --from=build /app/server server
+
+ENV NODE_ENV=production
+
+CMD ["./server"]
 
 EXPOSE 3000
-
-CMD ["bun", "run", "./build/index.js"]
