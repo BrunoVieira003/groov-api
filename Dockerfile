@@ -18,11 +18,11 @@ FROM gcr.io/distroless/base
 
 WORKDIR /app
 
-COPY --from=build /app/server server
+COPY --from=build /app/build/server server
 COPY --from=build /app/drizzle drizzle
 
 ENV NODE_ENV=production
 
-CMD ["./server"]
+CMD ["./build/server"]
 
 EXPOSE 3000
