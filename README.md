@@ -17,7 +17,7 @@ Here's a list of all features that may be available in this project
 - ✅ Playlists
 - 💭 Albums
 - ✅ Fuzzy search
-- 💭 Task feedback
+- ✅ Task feedback (sse)
 - ✅ Upload audio file
 - 💭 Unsynced Lyrics
 - 💭 Synced Lyrics

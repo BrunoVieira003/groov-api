@@ -27,8 +27,8 @@ export const artistsRelations = relations(artists, ({many}) => ({
 }))
 
 export const songsToArtists = pgTable('songs_to_artists', {
-    songId: uuid().notNull().references(() => songs.id),
-    artistId: uuid().notNull().references(() => artists.id)
+    songId: uuid().notNull().references(() => songs.id, {onDelete: 'cascade'}),
+    artistId: uuid().notNull().references(() => artists.id, {onDelete: 'cascade'})
 }, (t) => [
     primaryKey({columns: [t.songId, t.artistId]})
 ])
