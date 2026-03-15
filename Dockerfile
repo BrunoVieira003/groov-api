@@ -15,7 +15,7 @@ COPY drizzle.config.ts drizzle.config.ts
 RUN bun run build
 RUN ls
 
-FROM gcr.io/distroless/base
+FROM oven/bun:latest
 
 WORKDIR /app
 
