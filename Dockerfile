@@ -22,8 +22,6 @@ WORKDIR /app
 COPY --from=build /app/build/server server
 COPY --from=build /app/drizzle drizzle
 
-ENV NODE_ENV=production
-
-CMD ["./build/server"]
+CMD ["./server"]
 
 EXPOSE 3000

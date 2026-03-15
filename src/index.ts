@@ -8,11 +8,9 @@ import { taskRouter } from "./tasks/controller";
 import { toolsRouter } from "./tools/controller";
 import { playlistRouter } from "./playlists/controller";
 
-try{
-  await migrate(db, { migrationsFolder: './drizzle' })
-}catch(e: any){
-  console.error('Migrate error', e)
-}
+
+await migrate(db, { migrationsFolder: './drizzle' })
+
 
 const app = new Elysia()
   .use(cors())
