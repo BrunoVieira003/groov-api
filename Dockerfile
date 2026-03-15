@@ -22,6 +22,8 @@ WORKDIR /app
 COPY --from=build /app/build/server server
 COPY --from=build /app/drizzle drizzle
 
+RUN bun add bee-queue
+
 CMD ["./server"]
 
 EXPOSE 3000
