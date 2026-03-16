@@ -25,6 +25,8 @@ COPY --from=build /app/drizzle drizzle
 COPY --from=build /app/node_modules node_modules
 
 RUN bun add bee-queue
+RUN ls node_modules
+RUN ls node_modules/bee-queue/lib
 
 CMD ["bun ./server.js"]
 
