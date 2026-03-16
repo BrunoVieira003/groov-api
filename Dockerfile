@@ -22,6 +22,7 @@ WORKDIR /app
 
 COPY --from=build /app/build/server.js server.js
 COPY --from=build /app/drizzle drizzle
+COPY --from=build /app/node_modules node_modules
 
 RUN bun add bee-queue
 
