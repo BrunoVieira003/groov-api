@@ -13,7 +13,8 @@ COPY ./drizzle ./drizzle
 COPY drizzle.config.ts drizzle.config.ts
 
 RUN bun run build-js
-RUN ls
+RUN ls node_modules
+RUN ls node_modules/bee-queue/lib
 
 FROM oven/bun:latest
 
