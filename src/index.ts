@@ -21,6 +21,9 @@ const app = new Elysia()
   .use(toolsRouter)
   .listen(3000);
 
+
+console.log('Running on path', process.cwd())
+
 console.log(
   `🦊 Groov-api is running at ${app.server?.hostname}:${app.server?.port}`
 );
