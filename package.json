@@ -5,7 +5,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
     "build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile build/server src/index.ts",
-    "build-js": "bun build --minify-whitespace --minify-syntax --target bun --outfile build/server.js src/index.ts",
+    "build-js": "bun build --external bee-queue --target bun --outfile build/server.js src/index.ts",
     "db:push": "bunx --bun drizzle-kit push",
     "db:generate": "bunx --bun drizzle-kit generate",
     "db:migrate": "bunx --bun drizzle-kit migrate",
