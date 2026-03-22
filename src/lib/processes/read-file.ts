@@ -29,8 +29,8 @@ export async function readFileData(job: Job<ReadFileData>){
     const filepath = path.join(filesDir, filename)
 
     const metadata = await parseFile(filepath);
-
-    const title = metadata.common.title || filename
+    
+    const title = metadata.common.title || path.basename(filepath, path.extname(filepath))
 
     const picture = getPicture(metadata.common.picture)
 
