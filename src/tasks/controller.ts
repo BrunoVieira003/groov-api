@@ -4,11 +4,13 @@ import scanFolderQueue from "../lib/queues/scan-folder";
 import readFileQueue from "../lib/queues/read-file";
 import pruneSongsQueue from "../lib/queues/prune-songs";
 import { getProgressParams } from "./schema";
+import pruneAssetsQueue from "../lib/queues/prune-assets";
 
 const queues = {
     'scan-folder': scanFolderQueue,
     'upload': readFileQueue,
-    'prune-songs': pruneSongsQueue
+    'prune-songs': pruneSongsQueue,
+    'prune-assets': pruneAssetsQueue,
 }
 
 export const taskRouter = new Elysia({prefix: '/tasks'})
@@ -19,6 +21,10 @@ export const taskRouter = new Elysia({prefix: '/tasks'})
     })
     .post('prune-songs', async () => {
         const result = await TaskService.createPruneSongsTask()
+        return result
+    })
+    .post('prune-assets', async () => {
+        const result = await TaskService.createPruneAssetsTask()
         return result
     })
     .get(':taskType/:taskId', async ({params, set}) => {
