@@ -23,6 +23,7 @@ export const artistRouter = new Elysia({prefix: '/artist'})
                         song: {
                             columns: { filename: false },
                             with: {
+                                album: true,
                                 authors:  {
                                     columns: {},
                                     with: {
@@ -47,6 +48,7 @@ export const artistRouter = new Elysia({prefix: '/artist'})
                 title: song.title,
                 year: song.year,
                 color: song.color,
+                album: song.album,
                 authors: song.authors.map(a => a.artist)
             }
         })
