@@ -5,8 +5,9 @@ import readFileQueue from "../lib/queues/read-file";
 import pruneSongsQueue from "../lib/queues/prune-songs";
 import { getProgressParams } from "./schema";
 import pruneAssetsQueue from "../lib/queues/prune-assets";
+import BeeQueue from "bee-queue";
 
-const queues = {
+const queues: Record<typeof getProgressParams.static.taskType, BeeQueue> = {
     'scan-folder': scanFolderQueue,
     'upload': readFileQueue,
     'prune-songs': pruneSongsQueue,
