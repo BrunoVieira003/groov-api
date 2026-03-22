@@ -3,7 +3,7 @@ import { db } from "../database";
 import path from 'node:path';
 import fs from 'node:fs';
 import { eq, ilike } from "drizzle-orm";
-import { songs } from "../database/schema";
+import { albums, songs } from "../database/schema";
 import { filesDir, imagesDir } from "../constants";
 
 export default class SongService {
@@ -80,9 +80,20 @@ export default class SongService {
             throw new NotFoundError('Song not found')
         }
 
-        const filepath = path.join(imagesDir, `${song.id}.${song.coverArtFormat}`)
-        if (!fs.existsSync(filepath)) {
+        let filepath = path.join(imagesDir, `${song.id}.${song.coverArtFormat}`)
+        if (!fs.existsSync(filepath) && !song.albumId) {
             throw new NotFoundError('Cover art file not found')
+        }
+
+        if(song.albumId && !fs.existsSync(filepath)){
+            const album = await db.query.albums.findFirst({
+                where: eq(albums.id, song.albumId)
+            })
+
+            if(!album){
+                throw new NotFoundError('Cover art file not found')
+            }
+            filepath = path.join(imagesDir, 'album', `${album.id}.${album.coverArtFormat}`)
         }
 
         return file(filepath)
