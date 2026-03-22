@@ -12,6 +12,11 @@ export const artistRouter = new Elysia({prefix: '/artist'})
         const artist = await db.query.artists.findFirst({
             where: eq(artists.id, params.id),
             with: {
+                albums: {
+                    columns: {
+                        artistId: false
+                    }
+                },
                 songs: {
                     columns: {},
                     with: {
@@ -49,6 +54,7 @@ export const artistRouter = new Elysia({prefix: '/artist'})
         const result = {
             id: artist.id,
             name: artist.name,
+            albums: artist.albums,
             songs
         }
 
