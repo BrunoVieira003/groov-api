@@ -50,6 +50,13 @@
       "when": 1773104099206,
       "tag": "0006_add_on_cascade_on_delete_songs_to_artists",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774210633696,
+      "tag": "0007_add_albums_table",
+      "breakpoints": true
     }
   ]
 }

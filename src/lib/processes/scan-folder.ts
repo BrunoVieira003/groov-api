@@ -2,9 +2,10 @@ import { IPicture, parseFile } from "music-metadata"
 import path from "node:path"
 import { Job } from "bee-queue"
 import { db } from "../../database"
-import { artists, songs, songsToArtists } from "../../database/schema"
+import { albums, artists, songs, songsToArtists } from "../../database/schema"
 import { filesDir, imagesDir } from "../../constants"
 import {Vibrant} from 'node-vibrant/node'
+import { and, eq } from "drizzle-orm"
 
 export interface ScanFolderData {
     filenames: string[]
@@ -69,6 +70,7 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
         }
             
         const artistsTag = metadata.common.artists
+        const insertedArtists: {id: string, name: string}[] = []
         for (let art of artistsTag || []) {
             const artist = (await db.insert(artists)
                 .values({ name: art })
@@ -83,9 +85,48 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
             await db.insert(songsToArtists)
                 .values({ songId: song.id, artistId: artist.id })
                 .onConflictDoNothing()
+            
+            insertedArtists.push(artist)
         }
+
+        const albumName = metadata.common.album
+            const albumArtistName = metadata.common.albumartist
+            let albumArtist: typeof artists.$inferSelect | undefined = undefined
+            let album: typeof albums.$inferSelect
+            if(albumName){
+                if(albumArtistName){
+                    albumArtist = (await db.insert(artists)
+                        .values({ name: albumArtistName })
+                        .onConflictDoNothing()
+                        .returning())[0]
+                }
+                console.log()
+                const storedAlbum = await db.query.albums.findFirst({where: and(
+                    eq(albums.title, albumName),
+                    eq(albums.artistId, albumArtist ? albumArtist.id : insertedArtists[0].id)
+                )})
+        
+                if(!storedAlbum){
+                    const [newAlbum] = await db.insert(albums)
+                        .values({
+                            title: albumName,
+                            artistId: albumArtist ? albumArtist.id : insertedArtists[0].id
+                        })
+                        .returning()
+                        .execute()
+                    
+                    album = newAlbum
+                }else{
+                    album = storedAlbum
+                }
+        
+                await db.update(songs)
+                    .set({albumId: album.id})
+                    .where(eq(songs.id, song.id))
+                    .execute()
 
         job.reportProgress({ status: 'running', progress: ((filenames.findIndex(f => f === filename) + 1) / filenames.length) * 100 })
     }
+}
 
 }

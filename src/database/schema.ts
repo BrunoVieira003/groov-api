@@ -1,6 +1,13 @@
 import { relations } from "drizzle-orm";
 import { pgTable, primaryKey, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
+export const albums = pgTable('albums', {
+    id: uuid().primaryKey().defaultRandom(),
+    title: varchar('name').notNull(),
+    year: smallint(),
+    artistId: uuid().references(() => artists.id, {onDelete: 'set null'})
+})
+
 export const songs = pgTable('songs', {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar('title').notNull(),
@@ -8,11 +15,13 @@ export const songs = pgTable('songs', {
     filename: varchar('filename').notNull().unique('song_filename_unique'),
     coverArtFormat: varchar('cover_art_format'),
     color: varchar('color'),
+    albumId: uuid("album_id").references(() => albums.id, {onDelete: 'set null'}),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
     createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-export const songsRelations = relations(songs, ({many}) => ({
+export const songsRelations = relations(songs, ({one, many}) => ({
+    album: one(albums, { fields: [songs.albumId], references: [albums.id] }),
     authors: many(songsToArtists),
     playlists: many(songsToPlaylists)
 }))
@@ -23,7 +32,8 @@ export const artists = pgTable('artists', {
 })
 
 export const artistsRelations = relations(artists, ({many}) => ({
-    songs: many(songsToArtists)
+    songs: many(songsToArtists),
+    albums: many(albums)
 }))
 
 export const songsToArtists = pgTable('songs_to_artists', {
