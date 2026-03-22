@@ -6,6 +6,7 @@ import { albums, artists, songs, songsToArtists } from "../../database/schema"
 import { filesDir, imagesDir } from "../../constants"
 import {Vibrant} from 'node-vibrant/node'
 import { and, eq } from "drizzle-orm"
+import { existsSync } from "node:fs"
 
 export interface ScanFolderData {
     filenames: string[]
@@ -124,6 +125,20 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
                     .set({albumId: album.id})
                     .where(eq(songs.id, song.id))
                     .execute()
+                
+                if(picture){
+                    const picturePath = path.join(imagesDir, 'album', `${album.id}.${picture.format.split('/')[1]}`)
+                    if(!existsSync(picturePath)){
+                        await Bun.write(picturePath, picture.data)
+                        await db.update(albums)
+                            .set({
+                                ...album,
+                                coverArtFormat: getPictureFormat(picture)
+                            })
+                            .where(eq(albums.id, album.id))
+                            .execute()
+                    }
+                }
 
         job.reportProgress({ status: 'running', progress: ((filenames.findIndex(f => f === filename) + 1) / filenames.length) * 100 })
     }

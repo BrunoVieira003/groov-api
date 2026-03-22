@@ -6,6 +6,7 @@ import { albums, artists, songs, songsToArtists } from "../../database/schema";
 import path from "node:path"
 import { filesDir, imagesDir } from "../../constants";
 import { and, eq } from "drizzle-orm";
+import { existsSync } from "node:fs";
 
 export interface ReadFileData {
     filename: string
@@ -122,6 +123,20 @@ export async function readFileData(job: Job<ReadFileData>){
             .set({albumId: album.id})
             .where(eq(songs.id, song.id))
             .execute()
+        
+        if(picture){
+            const picturePath = path.join(imagesDir, 'album', `${album.id}.${picture.format.split('/')[1]}`)
+            if(!existsSync(picturePath)){
+                await Bun.write(picturePath, picture.data)
+                await db.update(albums)
+                    .set({
+                        ...album,
+                        coverArtFormat: getPictureFormat(picture)
+                    })
+                    .where(eq(albums.id, album.id))
+                    .execute()
+            }
+        }
     }
 
 

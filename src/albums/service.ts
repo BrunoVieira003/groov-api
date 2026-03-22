@@ -1,10 +1,27 @@
 import { eq } from "drizzle-orm"
 import { db } from "../database"
 import { albums, songs } from "../database/schema"
-import { NotFoundError } from "elysia"
+import { file, NotFoundError } from "elysia"
+import path from "node:path"
+import fs from "node:fs"
+import { imagesDir } from "../constants"
 
-export class AlbumService{
-    static async getAll(){
+export class AlbumService {
+    static async getCoverByAlbumId(id: string) {
+        const album = await db.query.albums.findFirst({ where: eq(albums.id, id) })
+        if (!album) {
+            throw new NotFoundError('Album not found')
+        }
+
+        const filepath = path.join(imagesDir, 'album', `${album.id}.${album.coverArtFormat}`)
+        if (!fs.existsSync(filepath)) {
+            throw new NotFoundError('Cover art file not found')
+        }
+
+        return file(filepath)
+    }
+    
+    static async getAll() {
         const albumList = await db.query.albums.findMany({
             columns: {
                 artistId: false
@@ -13,11 +30,11 @@ export class AlbumService{
                 artist: true
             }
         })
-        
+
         return albumList
     }
 
-    static async getById(id: string){
+    static async getById(id: string) {
         const album = await db.query.albums.findFirst({
             columns: {
                 artistId: false
@@ -41,7 +58,7 @@ export class AlbumService{
             }
         })
 
-        if(!album){
+        if (!album) {
             throw new NotFoundError('Album not found')
         }
 

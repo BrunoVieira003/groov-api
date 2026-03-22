@@ -5,7 +5,8 @@ export const albums = pgTable('albums', {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar('name').notNull(),
     year: smallint(),
-    artistId: uuid().references(() => artists.id, {onDelete: 'set null'})
+    artistId: uuid().references(() => artists.id, {onDelete: 'set null'}),
+    coverArtFormat: varchar('album_cover_art_format')
 })
 
 export const songs = pgTable('songs', {
