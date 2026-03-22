@@ -78,3 +78,11 @@ export const songsToPlaylistsRelations = relations(songsToPlaylists, ({one}) => 
         references: [playlists.id]
     }),
 }))
+
+export const albumsRelations = relations(albums, ({ one, many }) => ({
+    artist: one(artists, {
+        fields: [albums.artistId],
+        references: [artists.id],
+    }),
+    songs: many(songs),
+}));

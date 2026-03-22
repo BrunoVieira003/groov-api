@@ -7,6 +7,7 @@ import { artistRouter } from "./artists/controller";
 import { taskRouter } from "./tasks/controller";
 import { toolsRouter } from "./tools/controller";
 import { playlistRouter } from "./playlists/controller";
+import { albumRouter } from "./albums/controller";
 
 
 await migrate(db, { migrationsFolder: './drizzle' })
@@ -17,6 +18,7 @@ const app = new Elysia()
   .use(taskRouter)
   .use(songRouter)
   .use(artistRouter)
+  .use(albumRouter)
   .use(playlistRouter)
   .use(toolsRouter)
   .listen(3000);
