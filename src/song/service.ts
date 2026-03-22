@@ -10,6 +10,12 @@ export default class SongService {
     static async getAll() {
         const songList = await db.query.songs.findMany({
             with: {
+                album: {
+                    columns: {
+                        artistId: false,
+                        coverArtFormat: false,
+                    }
+                },
                 authors: {
                     columns: {},
                     with: { artist: true }
@@ -25,6 +31,7 @@ export default class SongService {
                 color: song.color,
                 createdAt: song.createdAt,
                 updatedAt: song.updatedAt,
+                album: song.album,
                 authors: song.authors.map(aut => aut.artist)
             }
         })
@@ -51,6 +58,12 @@ export default class SongService {
         const song = await db.query.songs.findFirst({ 
             where: eq(songs.id, id), 
             with: {
+                album: {
+                    columns: {
+                        artistId: false,
+                        coverArtFormat: false,
+                    }
+                },
                 authors: {
                     columns: {}, 
                     with: {
@@ -70,6 +83,7 @@ export default class SongService {
             color: song.color,
             createdAt: song.createdAt,
             updatedAt: song.updatedAt,
+            album: song.album,
             authors: song.authors.map(aut => aut.artist)
         }
     }
@@ -103,6 +117,12 @@ export default class SongService {
         const songList = await db.query.songs.findMany({ 
             where: ilike(songs.title, `%${title}%`), 
             with: {
+                album: {
+                    columns: {
+                        artistId: false,
+                        coverArtFormat: false,
+                    }
+                },
                 authors: {
                     columns: {}, 
                     with: {
@@ -120,6 +140,7 @@ export default class SongService {
                 color: song.color,
                 createdAt: song.createdAt,
                 updatedAt: song.updatedAt,
+                album: song.album,
                 authors: song.authors.map(aut => aut.artist)
             }
         })
