@@ -47,6 +47,7 @@ export class AlbumService {
                         albumId: false
                     },
                     with: {
+                        album: true,
                         authors: {
                             columns: {},
                             with: {
