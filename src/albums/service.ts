@@ -73,9 +73,9 @@ export class AlbumService {
         }
     }
 
-    static async search(name: string){
+    static async search(title: string){
         const albumList = await db.query.albums.findMany({ 
-            where: ilike(albums.title, `%${name}%`),
+            where: ilike(albums.title, `%${title}%`),
         })
     
         const result = albumList.map((album) => {

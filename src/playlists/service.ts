@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, ilike } from "drizzle-orm";
 import { db } from "../database";
 import { playlists, songs, songsToPlaylists } from "../database/schema";
 import { NotFoundError } from "elysia";
@@ -89,5 +89,20 @@ export class PlaylistService{
                 eq(songsToPlaylists.songId, songId)
             )
         )
+    }
+
+    static async search(title: string){
+        const playlistList = await db.query.playlists.findMany({ 
+            where: ilike(playlists.title, `%${title}%`),
+        })
+    
+        const result = playlistList.map((playlist) => {
+            return {
+                id: playlist.id,
+                title: playlist.title,
+            }
+        })
+    
+        return result
     }
 }
