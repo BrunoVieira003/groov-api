@@ -15,7 +15,7 @@ Here's a list of all features that may be available in this project
 - ✅ Song folder scanning
 - ✅ Song cover art
 - ✅ Playlists
-- 💭 Albums
+- ✅ Albums
 - ✅ Fuzzy search
 - ✅ Task feedback (sse)
 - ✅ Upload audio file
