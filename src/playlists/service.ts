@@ -33,13 +33,15 @@ export class PlaylistService{
                             columns: {
                                 createdAt: false,
                                 updatedAt: false,
-                                coverArtFormat: false
+                                coverArtFormat: false,
+                                albumId: false
                             },
                             with: {
                                 authors: {
                                     columns: {},
                                     with: {artist: true}
-                                }
+                                },
+                                album: true
                             }
                         }
                     },
