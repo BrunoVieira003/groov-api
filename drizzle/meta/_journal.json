@@ -64,6 +64,13 @@
       "when": 1774214174442,
       "tag": "0008_add_coverArtFormat_to_albums",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775394733776,
+      "tag": "0009_add_contrast_color_to_songs",
+      "breakpoints": true
     }
   ]
 }

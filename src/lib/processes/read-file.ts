@@ -37,11 +37,13 @@ export async function readFileData(job: Job<ReadFileData>){
     const picture = getPicture(metadata.common.picture)
 
     let prominentColor: string | null = null
+    let contrastColor: string | null = null
 
     if(picture){
         const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
         if(pallete.Vibrant){
             prominentColor = pallete.Vibrant.hex
+            contrastColor = pallete.Vibrant.bodyTextColor
         }
     }
 
@@ -52,13 +54,16 @@ export async function readFileData(job: Job<ReadFileData>){
             year: metadata.common.year,
             coverArtFormat: getPictureFormat(picture),
             color: prominentColor,
+            contrastColor: contrastColor
         })
         .onConflictDoUpdate({
             target: songs.filename,
             set: {
                 title,
                 year: metadata.common.year,
-                coverArtFormat: getPictureFormat(picture)
+                coverArtFormat: getPictureFormat(picture),
+                color: prominentColor,
+                contrastColor: contrastColor,
             }
         })
         .returning())[0]

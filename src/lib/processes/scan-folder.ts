@@ -39,14 +39,15 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
         const picture = getPicture(metadata.common.picture)
 
         let prominentColor: string | null = null
+        let contrastColor: string | null = null
 
         if(picture){
             const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
             if(pallete.Vibrant){
                 prominentColor = pallete.Vibrant.hex
+                contrastColor = pallete.Vibrant.bodyTextColor
             }
         }
-
         const song = (await db.insert(songs)
             .values({
                 title,
@@ -54,13 +55,16 @@ export async function scanLocalFolder(job: Job<ScanFolderData>) {
                 year: metadata.common.year,
                 coverArtFormat: getPictureFormat(picture),
                 color: prominentColor,
+                contrastColor: contrastColor
             })
             .onConflictDoUpdate({
                 target: songs.filename,
                 set: {
                     title,
                     year: metadata.common.year,
-                    coverArtFormat: getPictureFormat(picture)
+                    coverArtFormat: getPictureFormat(picture),
+                    color: prominentColor,
+                    contrastColor: contrastColor,
                 }
             })
             .returning())[0]

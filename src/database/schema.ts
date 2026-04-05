@@ -16,6 +16,7 @@ export const songs = pgTable('songs', {
     filename: varchar('filename').notNull().unique('song_filename_unique'),
     coverArtFormat: varchar('cover_art_format'),
     color: varchar('color'),
+    contrastColor: varchar('contrast_color'),
     albumId: uuid("album_id").references(() => albums.id, {onDelete: 'set null'}),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
     createdAt: timestamp('created_at').notNull().defaultNow(),
