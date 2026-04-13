@@ -2,63 +2,20 @@ import Elysia, { NotFoundError } from "elysia";
 import { db } from "../database";
 import { eq } from "drizzle-orm";
 import { artists } from "../database/schema";
+import ArtistService from "./service";
+import { artistQuerySchema } from "./schema";
 
 export const artistRouter = new Elysia({prefix: '/artist'})
-    .get('', async () => {
-        const artists = await db.query.artists.findMany()
+    .get('', async ({ query }) => {
+        const artists = await ArtistService.getAll({
+            field: query.sortField,
+            order: query.sortOrder
+        })
+
         return { artists }
-    })
+    }, {query: artistQuerySchema})
+
     .get('/:id', async ({params}) => {
-        const artist = await db.query.artists.findFirst({
-            where: eq(artists.id, params.id),
-            with: {
-                albums: {
-                    columns: {
-                        artistId: false
-                    }
-                },
-                songs: {
-                    columns: {},
-                    with: {
-                        song: {
-                            columns: { filename: false },
-                            with: {
-                                album: true,
-                                authors:  {
-                                    columns: {},
-                                    with: {
-                                        artist: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        })
-        if(!artist){
-            return new NotFoundError('Song not found')
-        }
-
-        const songs = artist.songs.map(s => {
-            const song = s.song
-
-            return {
-                id: song.id,
-                title: song.title,
-                year: song.year,
-                color: song.color,
-                album: song.album,
-                authors: song.authors.map(a => a.artist)
-            }
-        })
-
-        const result = {
-            id: artist.id,
-            name: artist.name,
-            albums: artist.albums,
-            songs
-        }
-
-        return result
+        const artist = ArtistService.getById(params.id)
+        return artist
     })
