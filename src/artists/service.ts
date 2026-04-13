@@ -2,14 +2,12 @@ import { eq, ilike } from "drizzle-orm"
 import { db } from "../database"
 import { artists } from "../database/schema"
 import { NotFoundError } from "elysia"
+import { SortOptions } from "../types"
 
-interface SortOptions{
-    field: keyof typeof artists.$inferSelect,
-    order: 'asc' | 'desc'
-}
+type ArtistSortOptions = SortOptions<typeof artists>
 
 export default class ArtistService{
-    static async getAll(sort: SortOptions){
+    static async getAll(sort: ArtistSortOptions){
         const artists = await db.query.artists.findMany({
             orderBy: (artists, order) => order[sort.order](artists[sort.field])
         })

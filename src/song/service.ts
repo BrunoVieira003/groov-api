@@ -5,14 +5,12 @@ import fs from 'node:fs';
 import { eq, ilike } from "drizzle-orm";
 import { albums, songs } from "../database/schema";
 import { filesDir, imagesDir } from "../constants";
+import { SortOptions } from "../types";
 
-interface SortOptions{
-    field: keyof typeof songs.$inferSelect
-    order: 'asc' | 'desc'
-}
+type SongSortOptions = SortOptions<typeof songs>
 
 export default class SongService {
-    static async getAll(sort: SortOptions) {
+    static async getAll(sort: SongSortOptions) {
         const songList = await db.query.songs.findMany({
             with: {
                 album: {
