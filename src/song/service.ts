@@ -6,8 +6,13 @@ import { eq, ilike } from "drizzle-orm";
 import { albums, songs } from "../database/schema";
 import { filesDir, imagesDir } from "../constants";
 
+interface SortOptions{
+    field: keyof typeof songs.$inferSelect
+    order: 'asc' | 'desc'
+}
+
 export default class SongService {
-    static async getAll() {
+    static async getAll(sort: SortOptions) {
         const songList = await db.query.songs.findMany({
             with: {
                 album: {
@@ -20,7 +25,8 @@ export default class SongService {
                     columns: {},
                     with: { artist: true }
                 }
-            }
+            },
+            orderBy: (songs, order) => order[sort.order](songs[sort.field])
         })
 
         const result = songList.map((song) => {

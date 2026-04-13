@@ -1,16 +1,19 @@
 import Elysia from "elysia";
 import SongService from "./service";
-import { uploadBodySchema } from "./schema";
+import { querySchema, uploadBodySchema } from "./schema";
 import readFileQueue from "../lib/queues/read-file";
 import { write } from "bun";
 import path from "node:path"
 import { filesDir } from "../constants";
 
 export const songRouter = new Elysia({ prefix: '/songs' })
-    .get('', async () => {
-        const songs = await SongService.getAll()
+    .get('', async ({query}) => {
+        const songs = await SongService.getAll({
+            field: query.sortField,
+            order: query.sortOrder
+        })
         return { songs }
-    })
+    }, {query: querySchema})
     .get('/:id', async ({ params, set }) => {
         const songFile = await SongService.getSongFileById(params.id)
 
