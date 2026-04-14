@@ -33,6 +33,7 @@ Here's a list of all features that may be available in this project
 - DTO Mapping
 - Pagination
 - Filtering
+- ✅ Sorting
 - ✅ Dockerfile
 
 ## Development
