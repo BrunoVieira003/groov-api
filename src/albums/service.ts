@@ -5,6 +5,9 @@ import { file, NotFoundError } from "elysia"
 import path from "node:path"
 import fs from "node:fs"
 import { imagesDir } from "../constants"
+import { SortOptions } from "../types"
+
+type AlbumSortOptions = SortOptions<typeof albums>
 
 export class AlbumService {
     static async getCoverByAlbumId(id: string) {
@@ -21,14 +24,15 @@ export class AlbumService {
         return file(filepath)
     }
     
-    static async getAll() {
+    static async getAll(sort: AlbumSortOptions) {
         const albumList = await db.query.albums.findMany({
             columns: {
                 artistId: false
             },
             with: {
                 artist: true
-            }
+            },
+            orderBy: (albums, order) => order[sort.order](albums[sort.field])
         })
 
         return albumList
