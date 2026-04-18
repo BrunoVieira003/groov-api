@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import Elysia, { ElysiaFile } from "elysia";
 import SongService from "./service";
 import { songQuerySchema, uploadBodySchema } from "./schema";
 import readFileQueue from "../lib/queues/read-file";
@@ -38,6 +38,12 @@ export const songRouter = new Elysia({ prefix: '/songs' })
         const song = await SongService.getSongById(params.id)
 
         return { song }
+    })
+
+    .get('/:id/lyrics', async ({ params, set }) => {
+        const lyrics = await SongService.getSongLyricsById(params.id)
+
+        return lyrics
     })
     
     .post('/upload', async ({ body }) => {

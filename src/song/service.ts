@@ -59,6 +59,35 @@ export default class SongService {
         return file(filepath)
     }
 
+    static async getSongLyricsById(id: string) {
+        const song = await db.query.songs.findFirst({ where: eq(songs.id, id) })
+        if (!song) {
+            return new NotFoundError('Song not found')
+        }
+
+        const extension = song.filename.slice(song.filename.lastIndexOf('.')+1)
+        let lyricFilepath: string | undefined
+        for(let ext of ['txt', 'lrc']){
+            const filepath = path.join(filesDir, song.filename.replace(extension, ext))
+            console.log(filepath)
+            if(fs.existsSync(filepath)){
+                lyricFilepath = filepath
+                break
+            }
+        }
+
+        if(!lyricFilepath){
+            return new NotFoundError('No lyric file found for this song')
+        }
+
+        const lyrics = await Bun.file(lyricFilepath).text()
+        return {
+            synced: false,
+            lyrics: lyrics.replaceAll('\r', '').split('\n'),
+        }
+
+    }
+
     static async getSongById(id: string){
         const song = await db.query.songs.findFirst({ 
             where: eq(songs.id, id), 
