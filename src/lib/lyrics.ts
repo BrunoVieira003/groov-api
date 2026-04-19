@@ -1,4 +1,4 @@
-export const lyricLineRegex = /\[\d\d:\d\d\.\d\d\][A-Za-z]+,/g
+export const lyricLineRegex = /\[\d\d:\d\d\.\d\d\][\s\S]*/g
 export const lyricHeaderRegex = /\[[A-Za-z][A-Za-z]:[A-Za-z]+\]/g
 export const lyricTimestampRegex = /\[\d+:\d*.\d*\][\s\S]*/i
 
