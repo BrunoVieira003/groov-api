@@ -69,7 +69,6 @@ export default class SongService {
         let lyricFilepath: string | undefined
         for(let ext of ['txt', 'lrc']){
             const filepath = path.join(filesDir, song.filename.replace(extension, ext))
-            console.log(filepath)
             if(fs.existsSync(filepath)){
                 lyricFilepath = filepath
                 break

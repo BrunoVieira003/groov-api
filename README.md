@@ -19,8 +19,8 @@ Here's a list of all features that may be available in this project
 - ✅ Fuzzy search
 - ✅ Task feedback (sse)
 - ✅ Upload audio file
-- 💭 Unsynced Lyrics
-- 💭 Synced Lyrics
+- ✅ Unsynced Lyrics
+- 💭 Line Synced Lyrics
 - 💭 Internacionalization
 
 ## Supported files
