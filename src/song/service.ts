@@ -6,6 +6,8 @@ import { eq, ilike } from "drizzle-orm";
 import { albums, songs } from "../database/schema";
 import { filesDir, imagesDir } from "../constants";
 import { SortOptions } from "../types";
+import console from "node:console";
+import { extractTimestampToMilliseconds, lyricHeaderRegex, lyricLineRegex } from "../lib/lyrics";
 
 type SongSortOptions = SortOptions<typeof songs>
 
@@ -79,10 +81,30 @@ export default class SongService {
             return new NotFoundError('No lyric file found for this song')
         }
 
-        const lyrics = await Bun.file(lyricFilepath).text()
+        const lyricsText = await Bun.file(lyricFilepath).text()
+
+        lyricsText.replaceAll('\r', '')
+        lyricsText.replaceAll(lyricHeaderRegex, '')
+        
+        const synced = lyricsText.split('\n').find(line => line.trim().match(lyricLineRegex)) ? true : false
+
+        let lyrics: { time: number | undefined; text: string; }[] | string[]
+        if(synced){
+            const rawLyrics = lyricsText.split('\n').map(line => line.trim()).filter(line => /\[\d+:\d*.\d*\][\s\S]*/g.test(line) )
+            lyrics = rawLyrics.map(lyric => {
+                return {
+                    time: extractTimestampToMilliseconds(lyric),
+                    text: lyric.replaceAll(/\[[^\]]*\]/g, '')
+                }
+            })
+        }else{
+            lyrics = lyricsText.split('\n').map(line => line.trim())
+
+        }
+
         return {
-            synced: false,
-            lyrics: lyrics.replaceAll('\r', '').split('\n'),
+            synced,
+            lyrics
         }
 
     }
