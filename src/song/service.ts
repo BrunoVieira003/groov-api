@@ -7,7 +7,7 @@ import { albums, songs } from "../database/schema";
 import { filesDir, imagesDir } from "../constants";
 import { SortOptions } from "../types";
 import console from "node:console";
-import { extractTimestampToMilliseconds, lyricHeaderRegex, lyricLineRegex } from "../lib/lyrics";
+import { extractTimestampToSeconds, lyricHeaderRegex, lyricLineRegex } from "../lib/lyrics";
 
 type SongSortOptions = SortOptions<typeof songs>
 
@@ -67,17 +67,17 @@ export default class SongService {
             return new NotFoundError('Song not found')
         }
 
-        const extension = song.filename.slice(song.filename.lastIndexOf('.')+1)
+        const extension = song.filename.slice(song.filename.lastIndexOf('.') + 1)
         let lyricFilepath: string | undefined
-        for(let ext of ['txt', 'lrc']){
+        for (let ext of ['txt', 'lrc']) {
             const filepath = path.join(filesDir, song.filename.replace(extension, ext))
-            if(fs.existsSync(filepath)){
+            if (fs.existsSync(filepath)) {
                 lyricFilepath = filepath
                 break
             }
         }
 
-        if(!lyricFilepath){
+        if (!lyricFilepath) {
             return new NotFoundError('No lyric file found for this song')
         }
 
@@ -85,19 +85,19 @@ export default class SongService {
 
         lyricsText.replaceAll('\r', '')
         lyricsText.replaceAll(lyricHeaderRegex, '')
-        
+
         const synced = lyricsText.split('\n').find(line => line.trim().match(lyricLineRegex)) ? true : false
 
         let lyrics: { time: number | undefined; text: string; }[] | string[]
-        if(synced){
-            const rawLyrics = lyricsText.split('\n').map(line => line.trim()).filter(line => /\[\d+:\d*.\d*\][\s\S]*/g.test(line) )
+        if (synced) {
+            const rawLyrics = lyricsText.split('\n').map(line => line.trim()).filter(line => /\[\d+:\d*.\d*\][\s\S]*/g.test(line))
             lyrics = rawLyrics.map(lyric => {
                 return {
-                    time: extractTimestampToMilliseconds(lyric),
+                    time: extractTimestampToSeconds(lyric),
                     text: lyric.replaceAll(/\[[^\]]*\]/g, '')
                 }
             })
-        }else{
+        } else {
             lyrics = lyricsText.split('\n').map(line => line.trim())
 
         }
@@ -109,9 +109,9 @@ export default class SongService {
 
     }
 
-    static async getSongById(id: string){
-        const song = await db.query.songs.findFirst({ 
-            where: eq(songs.id, id), 
+    static async getSongById(id: string) {
+        const song = await db.query.songs.findFirst({
+            where: eq(songs.id, id),
             with: {
                 album: {
                     columns: {
@@ -120,15 +120,15 @@ export default class SongService {
                     }
                 },
                 authors: {
-                    columns: {}, 
+                    columns: {},
                     with: {
-                        artist: true 
+                        artist: true
                     }
                 }
-            } 
+            }
         })
-        
-        if(!song){
+
+        if (!song) {
             return new NotFoundError("Song not found")
         }
 
@@ -155,12 +155,12 @@ export default class SongService {
             throw new NotFoundError('Cover art file not found')
         }
 
-        if(song.albumId && !fs.existsSync(filepath)){
+        if (song.albumId && !fs.existsSync(filepath)) {
             const album = await db.query.albums.findFirst({
                 where: eq(albums.id, song.albumId)
             })
 
-            if(!album){
+            if (!album) {
                 throw new NotFoundError('Cover art file not found')
             }
             filepath = path.join(imagesDir, 'album', `${album.id}.${album.coverArtFormat}`)
@@ -169,9 +169,9 @@ export default class SongService {
         return file(filepath)
     }
 
-    static async search(title: string){
-        const songList = await db.query.songs.findMany({ 
-            where: ilike(songs.title, `%${title}%`), 
+    static async search(title: string) {
+        const songList = await db.query.songs.findMany({
+            where: ilike(songs.title, `%${title}%`),
             with: {
                 album: {
                     columns: {
@@ -180,12 +180,12 @@ export default class SongService {
                     }
                 },
                 authors: {
-                    columns: {}, 
+                    columns: {},
                     with: {
-                        artist: true 
+                        artist: true
                     }
                 }
-            } 
+            }
         })
 
         const result = songList.map((song) => {
