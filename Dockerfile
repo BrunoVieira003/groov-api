@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.6-distroless AS build
+FROM oven/bun:1.3.6-slim AS build
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY ./src ./src
 
 RUN bun run build
 
-FROM gcr.io/distroless/base
+FROM oven/bun:1.3.6-distroless
 
 WORKDIR /app
 
