@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.6-alpine AS build
+FROM oven/bun:1.3.6-distroless AS build
 
 WORKDIR /app
 
