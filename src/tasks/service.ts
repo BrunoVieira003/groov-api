@@ -31,6 +31,6 @@ export default class TaskService {
         const filenames = files.map(f => path.relative(imagesDir, path.join(f.parentPath, f.name)))
 
         const job = await pruneAssetsQueue.add('prune-songs', { filenames })
-        return { songsAmount: filenames.length, taskId: job.id }
+        return { assetsAmount: filenames.length, taskId: job.id }
     }
 }
