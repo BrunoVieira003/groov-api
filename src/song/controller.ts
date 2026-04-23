@@ -55,6 +55,5 @@ export const songRouter = new Elysia({ prefix: '/songs' })
 
         const job = await readFileQueue.add('read-file', { filename })
 
-        console.log(readFileQueue.getJobCounts())
         return { taskId: job.id }
     }, { body: uploadBodySchema })
