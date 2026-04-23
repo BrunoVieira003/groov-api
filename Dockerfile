@@ -1,4 +1,4 @@
-FROM oven/bun:latest AS build
+FROM oven/bun:1.3.6-alpine AS build
 
 WORKDIR /app
 
@@ -20,7 +20,6 @@ WORKDIR /app
 
 COPY --from=build /app/build/server server
 COPY --from=build /app/drizzle drizzle
-COPY --from=build /app/node_modules node_modules
 COPY --from=build /app/drizzle.config.ts drizzle.config.ts
 
 CMD ["/app/server"]
