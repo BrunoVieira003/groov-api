@@ -12,7 +12,7 @@ COPY ./src ./src
 
 RUN bun run build
 
-FROM oven/bun:1.3.6-distroless
+FROM gcr.io/distroless/base
 
 WORKDIR /app
 
