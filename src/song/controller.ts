@@ -1,10 +1,10 @@
 import Elysia, { ElysiaFile } from "elysia";
 import SongService from "./service";
 import { songQuerySchema, uploadBodySchema } from "./schema";
-import readFileQueue from "../lib/queues/read-file";
 import { write } from "bun";
 import path from "node:path"
 import { filesDir } from "../constants";
+import { readFileQueue } from "../lib/queues/read-file";
 
 export const songRouter = new Elysia({ prefix: '/songs' })
     .get('', async ({ query }) => {
@@ -33,7 +33,7 @@ export const songRouter = new Elysia({ prefix: '/songs' })
         return songFile
 
     })
-    
+
     .get('/:id/stat', async ({ params }) => {
         const song = await SongService.getSongById(params.id)
 
@@ -45,7 +45,7 @@ export const songRouter = new Elysia({ prefix: '/songs' })
 
         return lyrics
     })
-    
+
     .post('/upload', async ({ body }) => {
         const file = body.file
         const filename = body.file.name
@@ -53,7 +53,8 @@ export const songRouter = new Elysia({ prefix: '/songs' })
         const filepath = path.join(filesDir, filename)
         await write(filepath, file)
 
-        const job = await readFileQueue.createJob({ filename }).save()
+        const job = await readFileQueue.add('read-file', { filename })
 
+        console.log(readFileQueue.getJobCounts())
         return { taskId: job.id }
     }, { body: uploadBodySchema })

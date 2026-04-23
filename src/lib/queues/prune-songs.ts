@@ -1,12 +1,40 @@
-import BeeQueue from "bee-queue";
-import { env } from "bun";
-import { pruneSongs, PruneSongsData } from "../processes/prune-songs";
+import { Bunqueue } from "bunqueue/client";
+import fs from 'node:fs'
+import path from "node:path";
+import { filesDir } from "../../constants";
+import { db } from "../../database";
+import { songs } from "../../database/schema";
+import { eq } from "drizzle-orm";
 
-const pruneSongsQueue = new BeeQueue<PruneSongsData>('prune-songs', { redis: env.REDIS_URL})
+export const pruneSongsQueue = new Bunqueue<{filenames: string[]}>('prune-songs', {
+    embedded: true,
+    processor: async (job) => {
+        const { filenames } = job.data
 
-pruneSongsQueue.process(pruneSongs)
-pruneSongsQueue.on('job retrying', (jobId, err) => {
-    console.log(jobId, ' retrying by error ', err.message)
+        let count = 0
+        for(let filename of filenames){
+            const filepath = path.join(filesDir, filename)
+    
+            if(!fs.existsSync(filepath)){
+                await db.delete(songs).where(eq(songs.filename, filename)).execute()
+                console.log('Song bind to', filename, 'removed')
+            }
+
+            count++
+            await job.updateProgress((count / filenames.length) * 100)
+        }
+    }
 })
 
-export default pruneSongsQueue
+
+pruneSongsQueue.on('active', (job) => {
+    console.log(`Checking ${job.data.filenames.length} files for pruning...`)
+})
+
+pruneSongsQueue.on('failed', (job) => {
+    console.log(`Checking failed`)
+})
+
+pruneSongsQueue.on('completed', (job) => {
+    console.log(`Checking completed`)
+})

@@ -1,31 +1,36 @@
 import fs from 'node:fs';
-import scanFolderQueue from "../lib/queues/scan-folder";
 import { filesDir, imagesDir } from '../constants';
 import { db } from '../database';
-import pruneSongsQueue from '../lib/queues/prune-songs';
 import { readdir } from 'node:fs/promises';
-import pruneAssetsQueue from '../lib/queues/prune-assets';
 import path from 'node:path';
+import { readFileQueue } from '../lib/queues/read-file';
+import { pruneSongsQueue } from '../lib/queues/prune-songs';
+import { pruneAssetsQueue } from '../lib/queues/prune-assets';
 
-export default class TaskService{
-    static async createScanFolderTask(){
+export default class TaskService {
+    static async createScanFolderTask() {
         const filenames = fs.readdirSync(filesDir)
-        const job = await scanFolderQueue.createJob({filenames}).save()
+        const jobs = await readFileQueue.addBulk(filenames.map(filename => {
+            return {
+                name: filename,
+                data: {filename},
+            }
+        }))
 
-        return { detectedFiles: filenames.length, taskId: job.id }
+        return { detectedFiles: filenames.length, tasks: jobs.map(j => j.id) }
     }
 
-    static async createPruneSongsTask(){
+    static async createPruneSongsTask() {
         const filenames = (await db.query.songs.findMany()).map(s => s.filename)
-        const job = await pruneSongsQueue.createJob({filenames}).save()
-        return {songsAmount: filenames.length, taskId: job.id}
+        const job = await pruneSongsQueue.add('prune-songs', { filenames })
+        return { songsAmount: filenames.length, taskId: job.id }
     }
 
-    static async createPruneAssetsTask(){
-        const files = (await readdir(imagesDir, {recursive: true, withFileTypes: true})).filter(f => f.isFile())
+    static async createPruneAssetsTask() {
+        const files = (await readdir(imagesDir, { recursive: true, withFileTypes: true })).filter(f => f.isFile())
         const filenames = files.map(f => path.relative(imagesDir, path.join(f.parentPath, f.name)))
 
-        const job = await pruneAssetsQueue.createJob({filenames}).save()
-        return {assetsAmount: filenames.length, taskId: job.id}
+        const job = await pruneAssetsQueue.add('prune-songs', { filenames })
+        return { songsAmount: filenames.length, taskId: job.id }
     }
 }
