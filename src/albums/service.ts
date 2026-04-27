@@ -1,6 +1,6 @@
-import { eq, ilike } from "drizzle-orm"
+import { and, eq, ilike, sql } from "drizzle-orm"
 import { db } from "../database"
-import { albums, songs } from "../database/schema"
+import { albums, artists, songs, songsToArtists } from "../database/schema"
 import { file, NotFoundError } from "elysia"
 import path from "node:path"
 import fs from "node:fs"
@@ -76,6 +76,21 @@ export class AlbumService {
                 }
             })
         }
+    }
+
+    static async getFeaturedArtists(id: string){
+        const featArtists = await db
+            .select({
+                id: artists.id,
+                name: artists.name
+            })
+            .from(artists)
+            .innerJoin(songsToArtists, eq(artists.id, songsToArtists.artistId))
+            .innerJoin(songs, eq(songsToArtists.songId, songs.id))
+            .where(eq(songs.albumId, id))
+            .groupBy(artists.id)
+        
+        return featArtists
     }
 
     static async search(title: string){

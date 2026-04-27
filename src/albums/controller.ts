@@ -23,3 +23,8 @@ export const albumRouter = new Elysia({ prefix: 'albums' })
 
         return songFile
     })
+
+    .get('/:id/featured', async ({params}) => {
+        const artists = await AlbumService.getFeaturedArtists(params.id)
+        return {artists}
+    })
