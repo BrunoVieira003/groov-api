@@ -7,6 +7,7 @@ import { readFileQueue } from '../lib/queues/read-file';
 import { pruneSongsQueue } from '../lib/queues/prune-songs';
 import { pruneAssetsQueue } from '../lib/queues/prune-assets';
 import { pruneAlbumsQueue } from '../lib/queues/prune-albums';
+import { pruneArtistsQueue } from '../lib/queues/prune-artists';
 
 export default class TaskService {
     static async createScanFolderTask() {
@@ -29,6 +30,11 @@ export default class TaskService {
 
     static async createPruneAlbumsTask() {
         const job = await pruneAlbumsQueue.add('prune-albums', {})
+        return { taskId: job.id }
+    }
+
+    static async createPruneArtistsTask() {
+        const job = await pruneArtistsQueue.add('prune-artists', {})
         return { taskId: job.id }
     }
 
