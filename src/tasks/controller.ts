@@ -15,3 +15,7 @@ export const taskRouter = new Elysia({ prefix: '/tasks' })
         const result = await TaskService.createPruneAssetsTask()
         return result
     })
+    .post('prune-albums', async () => {
+        const result = await TaskService.createPruneAlbumsTask()
+        return result
+    })
