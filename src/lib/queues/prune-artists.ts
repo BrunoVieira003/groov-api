@@ -30,9 +30,9 @@ export const pruneArtistsQueue = new Bunqueue('prune-artists', {
 })
 
 pruneArtistsQueue.on('failed', (job) => {
-    console.log(`Checking failed`)
+    console.log(`Artist pruning failed`)
 })
 
 pruneArtistsQueue.on('completed', (job) => {
-    console.log(`Checking completed`)
+    console.log(`Artist pruning completed`)
 })

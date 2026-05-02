@@ -44,13 +44,13 @@ export const pruneAssetsQueue = new Bunqueue<{filenames: string[]}>('prune-asset
 })
 
 pruneAssetsQueue.on('active', (job) => {
-    console.log(`Checking ${job.data.filenames.length} files for pruning...`)
+    console.log(`Checking ${job.data.filenames.length} assets for pruning...`)
 })
 
 pruneAssetsQueue.on('failed', (job) => {
-    console.log(`Checking failed`)
+    console.log(`Assets pruning failed`)
 })
 
 pruneAssetsQueue.on('completed', (job) => {
-    console.log(`Checking completed`)
+    console.log(`Assets pruning completed`)
 })

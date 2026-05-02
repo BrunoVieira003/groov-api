@@ -32,9 +32,9 @@ pruneSongsQueue.on('active', (job) => {
 })
 
 pruneSongsQueue.on('failed', (job) => {
-    console.log(`Checking failed`)
+    console.log(`Song pruning failed`)
 })
 
 pruneSongsQueue.on('completed', (job) => {
-    console.log(`Checking completed`)
+    console.log(`Song pruning completed`)
 })

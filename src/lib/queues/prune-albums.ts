@@ -26,9 +26,9 @@ export const pruneAlbumsQueue = new Bunqueue('prune-albums', {
 })
 
 pruneAlbumsQueue.on('failed', (job) => {
-    console.log(`Checking failed`)
+    console.log(`Album pruning failed`)
 })
 
 pruneAlbumsQueue.on('completed', (job) => {
-    console.log(`Checking completed`)
+    console.log(`Album pruning completed`)
 })
