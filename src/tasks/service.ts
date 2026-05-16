@@ -11,8 +11,17 @@ import { pruneArtistsQueue } from '../lib/queues/prune-artists';
 
 export default class TaskService {
     static async createScanFolderTask() {
-        const filenames = fs.readdirSync(filesDir).filter(fil => fil.endsWith('.mp3'))
-        const jobs = await readFileQueue.addBulk(filenames.map(filename => {
+        const filenames = fs.readdirSync(filesDir)
+        const songFiles = filenames.filter(fil => {
+            for (let filetype of ['.mp3', '.ogg']){
+                if(fil.endsWith(filetype)){
+                    return true
+                }
+            }
+
+            return false
+        })
+        const jobs = await readFileQueue.addBulk(songFiles.map(filename => {
             return {
                 name: filename,
                 data: {filename},

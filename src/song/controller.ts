@@ -18,7 +18,10 @@ export const songRouter = new Elysia({ prefix: '/songs' })
     .get('/:id', async ({ params, set }) => {
         const songFile = await SongService.getSongFileById(params.id)
 
-        set.headers["content-type"] = "audio/mpeg"
+        if(songFile instanceof ElysiaFile){
+            set.headers["content-type"] = songFile.type
+        }
+
         set.headers["accept-ranges"] = "bytes"
 
         return songFile

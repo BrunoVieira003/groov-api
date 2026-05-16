@@ -1,5 +1,4 @@
 import { Bunqueue } from "bunqueue/client";
-import { Workflow } from "bunqueue/workflow";
 import { filesDir, imagesDir } from "../../constants";
 import { IPicture, parseFile } from "music-metadata";
 import path from 'node:path'
@@ -76,8 +75,26 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         }
 
         const artistsTag = metadata.common.artists
+        const parsedArtists = []
+
+        for (let art of artistsTag || []){
+            if(art.includes('/')){
+                const splitArtists = art.split('/').map(a => a.trim())
+                parsedArtists.push(...splitArtists)
+                continue
+            }else if(art.includes(';')){
+                const splitArtists = art.split(';').map(a => a.trim())
+                parsedArtists.push(...splitArtists)
+            }else if(art.includes('\\')){
+                const splitArtists = art.split('\\').map(a => a.trim())
+                parsedArtists.push(...splitArtists)
+            }else{
+                parsedArtists.push(art.trim())
+            }
+        }
+
         const insertedArtists: { id: string, name: string }[] = []
-        for (let art of artistsTag || []) {
+        for (let art of parsedArtists) {
             const [artist] = (await db.insert(artists)
                 .values({ name: art })
                 .onConflictDoUpdate({
