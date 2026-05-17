@@ -37,25 +37,12 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
 
         const picture = getPicture(metadata.common.picture)
 
-        let prominentColor: string | null = null
-        let contrastColor: string | null = null
-
-        if (picture) {
-            const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
-            if (pallete.Vibrant) {
-                prominentColor = pallete.Vibrant.hex
-                contrastColor = pallete.Vibrant.bodyTextColor
-            }
-        }
-
         const song = (await db.insert(songs)
             .values({
                 title,
                 filename,
                 year: metadata.common.year,
                 coverArtFormat: getPictureFormat(picture),
-                color: prominentColor,
-                contrastColor: contrastColor
             })
             .onConflictDoUpdate({
                 target: songs.filename,
@@ -63,8 +50,6 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                     title,
                     year: metadata.common.year,
                     coverArtFormat: getPictureFormat(picture),
-                    color: prominentColor,
-                    contrastColor: contrastColor,
                 }
             })
             .returning())[0]
@@ -72,6 +57,24 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         if (picture) {
             const picturePath = path.join(imagesDir, `${song.id}.${picture.format.split('/')[1]}`)
             await Bun.write(picturePath, picture.data)
+
+            let prominentColor: string | null = null
+            let contrastColor: string | null = null
+            
+            const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
+
+            if (pallete.Vibrant) {
+                prominentColor = pallete.Vibrant.hex
+                contrastColor = pallete.Vibrant.bodyTextColor
+
+                await db
+                    .update(songs)
+                    .set({
+                        color: prominentColor,
+                        contrastColor: contrastColor
+                    })
+                    .where(eq(songs.id, song.id))
+            }
         }
 
         const artistsTag = metadata.common.artists
@@ -87,6 +90,9 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 parsedArtists.push(...splitArtists)
             }else if(art.includes('\\')){
                 const splitArtists = art.split('\\').map(a => a.trim())
+                parsedArtists.push(...splitArtists)
+            }else if(art.includes(',')){
+                const splitArtists = art.split(',').map(a => a.trim())
                 parsedArtists.push(...splitArtists)
             }else{
                 parsedArtists.push(art.trim())

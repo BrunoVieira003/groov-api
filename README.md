@@ -26,7 +26,7 @@ Here's a list of all features that may be available in this project
 ## Supported files
 - ✅ mp3
 - 💭 ogg
-- 💭 flac
+- ✅ flac
 - 💭 wav
 
 ## QoL Todo

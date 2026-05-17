@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { filesDir, imagesDir } from '../constants';
+import { filesDir, imagesDir, supportedFileFormats } from '../constants';
 import { db } from '../database';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -13,8 +13,8 @@ export default class TaskService {
     static async createScanFolderTask() {
         const filenames = fs.readdirSync(filesDir)
         const songFiles = filenames.filter(fil => {
-            for (let filetype of ['.mp3', '.ogg']){
-                if(fil.endsWith(filetype)){
+            for (let fileformat of supportedFileFormats){
+                if(fil.endsWith(fileformat)){
                     return true
                 }
             }
