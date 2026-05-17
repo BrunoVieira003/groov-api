@@ -9,9 +9,31 @@ import { pruneAssetsQueue } from '../lib/queues/prune-assets';
 import { pruneAlbumsQueue } from '../lib/queues/prune-albums';
 import { pruneArtistsQueue } from '../lib/queues/prune-artists';
 
+function getAllFiles(dir: string, files: string[] = [], baseDir?: string): string[] {
+    const absoluteDir = path.resolve(dir);
+    const absoluteBaseDir = baseDir ? path.resolve(baseDir) : absoluteDir;
+
+    const foundFiles = fs.readdirSync(absoluteDir);
+    
+    for (let found of foundFiles) {
+        const foundpath = path.join(absoluteDir, found);
+        const isDirectory = fs.statSync(foundpath).isDirectory();
+        
+        if (isDirectory) {
+            getAllFiles(foundpath, files, absoluteBaseDir);
+        } else {
+            const relativePath = path.relative(absoluteBaseDir, foundpath);
+            files.push(relativePath);
+        }
+    }
+
+    return files;
+}
+
 export default class TaskService {
     static async createScanFolderTask() {
-        const filenames = fs.readdirSync(filesDir)
+        const filenames = getAllFiles(filesDir)
+
         const songFiles = filenames.filter(fil => {
             for (let fileformat of supportedFileFormats){
                 if(fil.endsWith(fileformat)){
@@ -21,6 +43,7 @@ export default class TaskService {
 
             return false
         })
+
         const jobs = await readFileQueue.addBulk(songFiles.map(filename => {
             return {
                 name: filename,

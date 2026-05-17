@@ -177,8 +177,8 @@ readFileQueue.on('active', (job) => {
     console.log(`Reading ${job.data.filename}...`)
 })
 
-readFileQueue.on('failed', (job) => {
-    console.log(`Reading ${job.data.filename} failed`)
+readFileQueue.on('failed', (job, error) => {
+    console.log(`Reading ${job.data.filename} failed. ${error.message}`)
 })
 
 readFileQueue.on('completed', (job) => {
