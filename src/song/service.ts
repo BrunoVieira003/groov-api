@@ -46,19 +46,19 @@ export default class SongService {
         return result
     }
 
-    static async getSongFileById(id: string) {
+    static async getSongFilepathById(id: string) {
         const song = await db.query.songs.findFirst({ where: eq(songs.id, id) })
         if (!song) {
-            return new NotFoundError('Song not found')
+            throw new NotFoundError('Song not found')
         }
 
         const filepath = path.join(filesDir, song.filename)
 
         if (!fs.existsSync(filepath)) {
-            return new NotFoundError('Song not found')
+            throw new NotFoundError('Song not found')
         }
 
-        return file(filepath)
+        return filepath
     }
 
     static async getSongLyricsById(id: string) {

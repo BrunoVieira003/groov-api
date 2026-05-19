@@ -1,10 +1,11 @@
-import Elysia, { ElysiaFile } from "elysia";
+import Elysia, { ElysiaFile, file } from "elysia";
 import SongService from "./service";
-import { songQuerySchema, uploadBodySchema } from "./schema";
+import { RangeHeaderSchema, songQuerySchema, uploadBodySchema } from "./schema";
 import { write } from "bun";
 import path from "node:path"
 import { filesDir } from "../constants";
 import { readFileQueue } from "../lib/queues/read-file";
+import { createReadStream, stat, statSync } from "node:fs";
 
 export const songRouter = new Elysia({ prefix: '/songs' })
     .get('', async ({ query }) => {
@@ -15,18 +16,30 @@ export const songRouter = new Elysia({ prefix: '/songs' })
         return { songs }
     }, { query: songQuerySchema })
 
-    .get('/:id', async ({ params, set }) => {
-        const songFile = await SongService.getSongFileById(params.id)
+    .get('/:id', async ({ params, set, headers }) => {
+        const songFilepath = await SongService.getSongFilepathById(params.id)
+        const { size } = statSync(songFilepath)
+        const songFile = file(songFilepath)
 
-        if(songFile instanceof ElysiaFile){
-            set.headers["content-type"] = songFile.type
+        const range = headers['range']
+        if (!range) {
+            set.headers["Content-Type"] = songFile.type
+            set.headers["Accept-Ranges"] = "bytes"
+            return createReadStream(songFilepath)
         }
 
-        set.headers["accept-ranges"] = "bytes"
+        const [_, startStr, endStr] = /bytes=(\d*)-(\d*)/.exec(range) ?? []
+        const start = startStr ? Number(startStr) : 0
+        const end = endStr ? Number(endStr) : size - 1
 
-        return songFile
+        set.status = 206
+        set.headers["Content-Type"] = songFile.type
+        set.headers["Accept-Ranges"] = "bytes"
+        set.headers["Content-Range"] = `bytes ${start}-${end}/${size}`
+        set.headers["Content-Length"] = `${end - start + 1}`
 
-    })
+        return createReadStream(songFilepath, { start, end })
+    }, { headers: RangeHeaderSchema })
 
     .get('/:id/cover', async ({ params, set }) => {
         const songFile = await SongService.getCoverBySongId(params.id)
