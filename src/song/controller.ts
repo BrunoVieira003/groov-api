@@ -5,7 +5,7 @@ import { write } from "bun";
 import path from "node:path"
 import { filesDir } from "../constants";
 import { readFileQueue } from "../lib/queues/read-file";
-import { createReadStream, stat, statSync } from "node:fs";
+import { createReadStream } from "node:fs";
 
 export const songRouter = new Elysia({ prefix: '/songs' })
     .get('', async ({ query }) => {
@@ -17,15 +17,14 @@ export const songRouter = new Elysia({ prefix: '/songs' })
     }, { query: songQuerySchema })
 
     .get('/:id', async ({ params, set, headers }) => {
-        const songFilepath = await SongService.getSongFilepathById(params.id)
-        const { size } = statSync(songFilepath)
-        const songFile = file(songFilepath)
+        const songFile = await SongService.getSongFileById(params.id)
+        const size = songFile.size
 
         const range = headers['range']
         if (!range) {
             set.headers["Content-Type"] = songFile.type
             set.headers["Accept-Ranges"] = "bytes"
-            return createReadStream(songFilepath)
+            return createReadStream(songFile.name || '')
         }
 
         const [_, startStr, endStr] = /bytes=(\d*)-(\d*)/.exec(range) ?? []
@@ -38,7 +37,7 @@ export const songRouter = new Elysia({ prefix: '/songs' })
         set.headers["Content-Range"] = `bytes ${start}-${end}/${size}`
         set.headers["Content-Length"] = `${end - start + 1}`
 
-        return createReadStream(songFilepath, { start, end })
+        return createReadStream(songFile.name || '', { start, end })
     }, { headers: RangeHeaderSchema })
 
     .get('/:id/cover', async ({ params, set }) => {

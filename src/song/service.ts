@@ -6,7 +6,6 @@ import { eq, ilike } from "drizzle-orm";
 import { albums, songs } from "../database/schema";
 import { filesDir, imagesDir } from "../constants";
 import { SortOptions } from "../types";
-import console from "node:console";
 import { extractTimestampToSeconds, lyricHeaderRegex, lyricLineRegex } from "../lib/lyrics";
 
 type SongSortOptions = SortOptions<typeof songs>
@@ -46,7 +45,7 @@ export default class SongService {
         return result
     }
 
-    static async getSongFilepathById(id: string) {
+    static async getSongFileById(id: string) {
         const song = await db.query.songs.findFirst({ where: eq(songs.id, id) })
         if (!song) {
             throw new NotFoundError('Song not found')
@@ -58,7 +57,7 @@ export default class SongService {
             throw new NotFoundError('Song not found')
         }
 
-        return filepath
+        return Bun.file(filepath)
     }
 
     static async getSongLyricsById(id: string) {
