@@ -8,6 +8,7 @@ import { taskRouter } from "./tasks/controller";
 import { toolsRouter } from "./tools/controller";
 import { playlistRouter } from "./playlists/controller";
 import { albumRouter } from "./albums/controller";
+import { sql } from "drizzle-orm";
 
 
 await migrate(db, { migrationsFolder: './drizzle' })
@@ -21,6 +22,15 @@ const app = new Elysia()
   .use(albumRouter)
   .use(playlistRouter)
   .use(toolsRouter)
+  .get('/health', async ({status}) => {
+    try{
+      await db.execute(sql`SELECT 1`)
+      
+      return status(200, {status: 'Ok'})
+    }catch(e){
+      return status(503, {status: 'Database connection failed'})
+    }
+  })
   .listen(3000);
 
 console.log(
