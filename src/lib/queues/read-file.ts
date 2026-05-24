@@ -55,8 +55,10 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
             .returning())[0]
 
         if (picture) {
-            const picturePath = path.join(imagesDir, `${song.id}.${picture.format.split('/')[1]}`)
-            await Bun.write(picturePath, picture.data)
+            const picturePath = path.join(imagesDir, `${song.id}.webp`)
+            await new Bun.Image(picture.data)
+                .webp({lossless: true})
+                .write(picturePath)
 
             let prominentColor: string | null = null
             let contrastColor: string | null = null
@@ -157,9 +159,12 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 .execute()
 
             if (picture) {
-                const picturePath = path.join(imagesDir, 'album', `${album.id}.${picture.format.split('/')[1]}`)
+                const picturePath = path.join(imagesDir, 'album', `${album.id}.webp`)
                 if (!existsSync(picturePath)) {
-                    await Bun.write(picturePath, picture.data)
+                    await new Bun.Image(picture.data)
+                        .webp({lossless: true})
+                        .write(picturePath)
+
                     await db.update(albums)
                         .set({
                             ...album,

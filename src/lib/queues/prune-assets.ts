@@ -21,7 +21,7 @@ export const pruneAssetsQueue = new Bunqueue<{filenames: string[]}>('prune-asset
     
                 if(!album){
                     const filepath = path.join(imagesDir, filename)
-                    await fs.unlink(filepath)
+                    await Bun.file(filepath).delete()
                     console.log('File', filename, 'removed')
                 }
             }else{
@@ -32,7 +32,7 @@ export const pruneAssetsQueue = new Bunqueue<{filenames: string[]}>('prune-asset
                 
                 if(!song){
                     const filepath = path.join(imagesDir, filename)
-                    await fs.unlink(filepath)
+                    await Bun.file(filepath).delete()
                     console.log('File', filename, 'removed')
                 }
             }
@@ -45,10 +45,6 @@ export const pruneAssetsQueue = new Bunqueue<{filenames: string[]}>('prune-asset
 
 pruneAssetsQueue.on('active', (job) => {
     console.log(`Checking ${job.data.filenames.length} assets for pruning...`)
-})
-
-pruneAssetsQueue.on('failed', (job) => {
-    console.log(`Assets pruning failed`)
 })
 
 pruneAssetsQueue.on('completed', (job) => {
