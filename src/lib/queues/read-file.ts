@@ -80,25 +80,25 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         }
 
         const artistsTag = metadata.common.artists
-        const parsedArtists = []
+        const parsedArtists: string[] = []
 
         for (let art of artistsTag || []){
+            let splitArtists: string[] = []
+
             if(art.includes('/')){
-                const splitArtists = art.split('/').map(a => a.trim())
-                parsedArtists.push(...splitArtists)
-                continue
+                splitArtists = art.split('/')
             }else if(art.includes(';')){
-                const splitArtists = art.split(';').map(a => a.trim())
-                parsedArtists.push(...splitArtists)
+                splitArtists = art.split(';')
             }else if(art.includes('\\')){
-                const splitArtists = art.split('\\').map(a => a.trim())
-                parsedArtists.push(...splitArtists)
+                splitArtists = art.split('\\')
             }else if(art.includes(',')){
-                const splitArtists = art.split(',').map(a => a.trim())
-                parsedArtists.push(...splitArtists)
-            }else{
-                parsedArtists.push(art.trim())
+                splitArtists = art.split(',')
             }
+
+            splitArtists = splitArtists.map(a => a.trim())
+            splitArtists = splitArtists.filter(a => a !== '< ARTIST >')
+
+            parsedArtists.push(...splitArtists)
         }
 
         const insertedArtists: { id: string, name: string }[] = []
