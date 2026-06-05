@@ -93,6 +93,8 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 splitArtists = art.split('\\')
             }else if(art.includes(',')){
                 splitArtists = art.split(',')
+            }else{
+                splitArtists.push(art)
             }
 
             splitArtists = splitArtists.map(a => a.trim())
