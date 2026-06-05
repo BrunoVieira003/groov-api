@@ -16,7 +16,7 @@ export class AlbumService {
             throw new NotFoundError('Album not found')
         }
 
-        const filepath = path.join(imagesDir, 'album', `${album.id}.${album.coverArtFormat}`)
+        const filepath = path.join(imagesDir, 'album', `${album.id}.webp`)
         if (!fs.existsSync(filepath)) {
             throw new NotFoundError('Cover art file not found')
         }
