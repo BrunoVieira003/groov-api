@@ -149,7 +149,7 @@ export default class SongService {
             throw new NotFoundError('Song not found')
         }
 
-        let filepath = path.join(imagesDir, `${song.id}.${song.coverArtFormat}`)
+        let filepath = path.join(imagesDir, `${song.id}.webp`)
         if (!fs.existsSync(filepath) && !song.albumId) {
             throw new NotFoundError('Cover art file not found')
         }
@@ -162,7 +162,7 @@ export default class SongService {
             if (!album) {
                 throw new NotFoundError('Cover art file not found')
             }
-            filepath = path.join(imagesDir, 'album', `${album.id}.${album.coverArtFormat}`)
+            filepath = path.join(imagesDir, 'album', `${album.id}.webp`)
         }
 
         return file(filepath)
