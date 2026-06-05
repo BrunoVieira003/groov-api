@@ -132,33 +132,56 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                     .returning())[0]
             }
 
-            const storedAlbum = await db.query.albums.findFirst({
-                where: and(
-                    eq(albums.title, albumName),
-                    eq(albums.artistId, albumArtist ? albumArtist.id : insertedArtists[0].id)
-                )
-            })
-
-            if (!storedAlbum) {
+            if (albumArtist || insertedArtists.length > 0){
+                const storedAlbum = await db.query.albums.findFirst({
+                    where: and(
+                        eq(albums.title, albumName),
+                        eq(albums.artistId, albumArtist ? albumArtist.id : insertedArtists[0].id)
+                    )
+                })
+    
+                if (!storedAlbum) {
+                    const [newAlbum] = await db.insert(albums)
+                        .values({
+                            title: albumName,
+                            artistId: albumArtist ? albumArtist.id : insertedArtists[0].id
+                        })
+                        .returning()
+                        .execute()
+    
+                    album = newAlbum
+                } else {
+                    album = storedAlbum
+                }
+            }else{
+                albumArtist = (await db.insert(artists)
+                    .values({ name: 'unknown' })
+                    .onConflictDoUpdate({
+                        target: artists.name,
+                        set: {
+                            name: 'unknown'
+                        }
+                    })
+                    .returning())[0]
+                
                 const [newAlbum] = await db.insert(albums)
                     .values({
                         title: albumName,
-                        artistId: albumArtist ? albumArtist.id : insertedArtists[0].id
+                        artistId: albumArtist.id
                     })
                     .returning()
                     .execute()
 
                 album = newAlbum
-            } else {
-                album = storedAlbum
             }
+
 
             await db.update(songs)
                 .set({ albumId: album.id })
                 .where(eq(songs.id, song.id))
                 .execute()
 
-            if (picture) {
+            if (picture && album) {
                 const picturePath = path.join(imagesDir, 'album', `${album.id}.webp`)
                 if (!existsSync(picturePath)) {
                     await new Bun.Image(picture.data)
