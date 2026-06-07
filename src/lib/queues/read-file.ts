@@ -71,10 +71,11 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         const { filename } = job.data
         const filepath = path.join(filesDir, filename)
 
-        const metadata = await parseFile(filepath);
+        const metadata = await parseFile(filepath, {duration: true});
         await job.updateProgress(10, 'Metadata read')
 
         const title = metadata.common.title || path.basename(filepath, path.extname(filepath))
+        const duration = metadata.format.duration
 
         const picture = getPicture(metadata.common.picture)
 
@@ -83,6 +84,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 title,
                 filename,
                 year: metadata.common.year,
+                duration,
                 coverArtFormat: getPictureFormat(picture),
             })
             .onConflictDoUpdate({
@@ -90,6 +92,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 set: {
                     title,
                     year: metadata.common.year,
+                    duration,
                     coverArtFormat: getPictureFormat(picture),
                 }
             })
@@ -121,7 +124,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         }
 
         const songArtists = normalizeArtists(...metadata.common.artists || [], ...metadata.common.albumartists || [])
-        console.log(songArtists)
+
         const insertedArtists: { id: string, name: string }[] = []
         for (let art of songArtists) {
             const [artist] = (await db.insert(artists)

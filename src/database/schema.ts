@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, primaryKey, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { integer, numeric, pgTable, primaryKey, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const albums = pgTable('albums', {
     id: uuid().primaryKey().defaultRandom(),
@@ -14,6 +14,7 @@ export const songs = pgTable('songs', {
     title: varchar('title').notNull(),
     year: smallint(),
     filename: varchar('filename').notNull().unique('song_filename_unique'),
+    duration: integer('duration'),
     coverArtFormat: varchar('cover_art_format'),
     color: varchar('color'),
     contrastColor: varchar('contrast_color'),
