@@ -8,6 +8,10 @@ import { db } from "../../database";
 import { and, eq } from "drizzle-orm";
 import { existsSync } from "node:fs";
 
+const whitelist = [
+    "Earth, Wind & Fire",
+]
+
 export interface ReadFileJobData {
     filename: string
 }
@@ -16,6 +20,43 @@ function getPicture(picture: IPicture[] | undefined) {
     if (picture && picture.length > 0) {
         return picture[0]
     }
+}
+
+function normalizeArtists(...artists: string[]){
+    if(!artists || artists.length === 0){
+        return []
+    }
+
+    const normalizedArtists: string[] = []
+
+    for(let art of artists){
+        let parsedArtists = new Set<string>()
+        if(whitelist.includes(art)){
+            parsedArtists.add(art.trim())
+            normalizedArtists.push(...parsedArtists)
+            continue
+        }
+             
+        let divided = false
+        for(let divider of [',', '/', '\\', ';']){
+            if(art.includes(divider)){
+                const splitArtists = art.split(divider)
+                splitArtists.forEach(a => parsedArtists.add(a.trim()))
+                divided = true
+                break
+            }
+        }
+
+        if(!divided){
+            parsedArtists.add(art.trim())
+        }
+
+        normalizedArtists.push(...parsedArtists)
+    }
+
+
+
+    return normalizedArtists
 }
 
 function getPictureFormat(picture: IPicture | undefined) {
@@ -37,7 +78,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
 
         const picture = getPicture(metadata.common.picture)
 
-        const song = (await db.insert(songs)
+        const [song] = (await db.insert(songs)
             .values({
                 title,
                 filename,
@@ -52,7 +93,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                     coverArtFormat: getPictureFormat(picture),
                 }
             })
-            .returning())[0]
+            .returning())
 
         if (picture) {
             const picturePath = path.join(imagesDir, `${song.id}.webp`)
@@ -79,32 +120,10 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
             }
         }
 
-        const artistsTag = metadata.common.artists
-        const parsedArtists: string[] = []
-
-        for (let art of artistsTag || []){
-            let splitArtists: string[] = []
-
-            if(art.includes('/')){
-                splitArtists = art.split('/')
-            }else if(art.includes(';')){
-                splitArtists = art.split(';')
-            }else if(art.includes('\\')){
-                splitArtists = art.split('\\')
-            }else if(art.includes(',')){
-                splitArtists = art.split(',')
-            }else{
-                splitArtists.push(art)
-            }
-
-            splitArtists = splitArtists.map(a => a.trim())
-            splitArtists = splitArtists.filter(a => a !== '< ARTIST >')
-
-            parsedArtists.push(...splitArtists)
-        }
-
+        const songArtists = normalizeArtists(...metadata.common.artists || [], ...metadata.common.albumartists || [])
+        console.log(songArtists)
         const insertedArtists: { id: string, name: string }[] = []
-        for (let art of parsedArtists) {
+        for (let art of songArtists) {
             const [artist] = (await db.insert(artists)
                 .values({ name: art })
                 .onConflictDoUpdate({
@@ -123,22 +142,13 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         }
 
         const albumName = metadata.common.album
-        const albumArtistName = metadata.common.albumartist
-        let albumArtist: typeof artists.$inferSelect | undefined = undefined
         let album: typeof albums.$inferSelect
         if (albumName) {
-            if (albumArtistName) {
-                albumArtist = (await db.insert(artists)
-                    .values({ name: albumArtistName })
-                    .onConflictDoNothing()
-                    .returning())[0]
-            }
-
-            if (albumArtist || insertedArtists.length > 0){
+            if (insertedArtists.length > 0){
                 const storedAlbum = await db.query.albums.findFirst({
                     where: and(
                         eq(albums.title, albumName),
-                        eq(albums.artistId, albumArtist ? albumArtist.id : insertedArtists[0].id)
+                        eq(albums.artistId, insertedArtists[0].id)
                     )
                 })
     
@@ -146,7 +156,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                     const [newAlbum] = await db.insert(albums)
                         .values({
                             title: albumName,
-                            artistId: albumArtist ? albumArtist.id : insertedArtists[0].id
+                            artistId: insertedArtists[0].id
                         })
                         .returning()
                         .execute()
@@ -156,7 +166,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                     album = storedAlbum
                 }
             }else{
-                albumArtist = (await db.insert(artists)
+                const [insertedArtist] = (await db.insert(artists)
                     .values({ name: 'unknown' })
                     .onConflictDoUpdate({
                         target: artists.name,
@@ -164,12 +174,12 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                             name: 'unknown'
                         }
                     })
-                    .returning())[0]
+                    .returning())
                 
                 const [newAlbum] = await db.insert(albums)
                     .values({
                         title: albumName,
-                        artistId: albumArtist.id
+                        artistId: insertedArtist.id
                     })
                     .returning()
                     .execute()
