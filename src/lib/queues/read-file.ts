@@ -8,9 +8,13 @@ import { db } from "../../database";
 import { and, eq } from "drizzle-orm";
 import { existsSync } from "node:fs";
 
-const whitelist = [
+const artistExactWhitelist = [
     "Earth, Wind & Fire",
 ]
+
+const artistCompositeWhitelist = {
+    "AC/DC": ["AC", "DC"]
+}
 
 export interface ReadFileJobData {
     filename: string
@@ -27,11 +31,11 @@ function normalizeArtists(...artists: string[]){
         return []
     }
 
-    const normalizedArtists: string[] = []
+    let normalizedArtists: string[] = []
 
     for(let art of artists){
         let parsedArtists = new Set<string>()
-        if(whitelist.includes(art)){
+        if(artistExactWhitelist.includes(art)){
             parsedArtists.add(art.trim())
             normalizedArtists.push(...parsedArtists)
             continue
@@ -54,7 +58,12 @@ function normalizeArtists(...artists: string[]){
         normalizedArtists.push(...parsedArtists)
     }
 
-
+    for(let [tag, subset] of Object.entries(artistCompositeWhitelist)){
+        if(subset.every(v => normalizedArtists.includes(v))){
+            normalizedArtists = normalizedArtists.filter(v => !subset.includes(v))
+            normalizedArtists = [tag, ...normalizedArtists]
+        }
+    }
 
     return normalizedArtists
 }
