@@ -7,15 +7,11 @@ import { albums, artists, songs, songsToArtists } from "../../database/schema";
 import { db } from "../../database";
 import { and, eq } from "drizzle-orm";
 import { existsSync } from "node:fs";
+import whitelist from '../artist-whitelist.yml'
 
-const artistExactWhitelist = [
-    "Earth, Wind & Fire",
-]
-
-const artistCompositeWhitelist = {
-    "AC/DC": ["AC", "DC"],
-    "K/DA": ["K", "DA"],
-}
+const dividers = whitelist.artistDividers as string[]
+const artistExactWhitelist = whitelist.artistExactMatch as string[]
+const artistCompositeWhitelist = whitelist.artistCompositeMatch as Record<string, string[]>
 
 export interface ReadFileJobData {
     filename: string
@@ -43,7 +39,7 @@ function normalizeArtists(...artists: string[]){
         }
              
         let divided = false
-        for(let divider of [',', '/', '\\', ';']){
+        for(let divider of dividers){
             if(art.includes(divider)){
                 const splitArtists = art.split(divider)
                 splitArtists.forEach(a => parsedArtists.add(a.trim()))
@@ -134,6 +130,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         }
 
         const songArtists = normalizeArtists(...metadata.common.artists || [], ...metadata.common.albumartists || [])
+        console.log(songArtists)
 
         const insertedArtists: { id: string, name: string }[] = []
         for (let art of songArtists) {
