@@ -13,7 +13,8 @@ const artistExactWhitelist = [
 ]
 
 const artistCompositeWhitelist = {
-    "AC/DC": ["AC", "DC"]
+    "AC/DC": ["AC", "DC"],
+    "K/DA": ["K", "DA"],
 }
 
 export interface ReadFileJobData {
@@ -60,7 +61,7 @@ function normalizeArtists(...artists: string[]){
 
     for(let [tag, subset] of Object.entries(artistCompositeWhitelist)){
         if(subset.every(v => normalizedArtists.includes(v))){
-            normalizedArtists = normalizedArtists.filter(v => !subset.includes(v))
+            normalizedArtists = normalizedArtists.filter(v => !subset.includes(v.toUpperCase()))
             normalizedArtists = [tag, ...normalizedArtists]
         }
     }
