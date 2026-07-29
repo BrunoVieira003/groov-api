@@ -1,4 +1,4 @@
-artistDividers: [',', ';', '/', '\', 'feat.']
+artistDividers: [',', ';', '/', '\', 'feat.', 'ft.']
 
 artistExactMatch:
   - Earth, Wind & Fire
@@ -6,3 +6,4 @@ artistExactMatch:
 artistCompositeMatch:
   AC/DC:  [AC, DC]
   K/DA:   [K, DA]
+  "Earth, Wind & Fire": [Earth, Wind & Fire]

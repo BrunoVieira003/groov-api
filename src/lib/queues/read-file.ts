@@ -31,6 +31,7 @@ function normalizeArtists(...artists: string[]){
     let normalizedArtists: string[] = []
 
     for(let art of artists){
+        art = art.replaceAll('< ARTIST >', '').trim()
         let parsedArtists = new Set<string>()
         if(artistExactWhitelist.includes(art)){
             parsedArtists.add(art.trim())
@@ -78,6 +79,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         const filepath = path.join(filesDir, filename)
 
         const metadata = await parseFile(filepath, {duration: true});
+        console.log("metadata", metadata.common)
         await job.updateProgress(10, 'Metadata read')
 
         const title = metadata.common.title || path.basename(filepath, path.extname(filepath))

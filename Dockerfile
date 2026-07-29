@@ -20,6 +20,9 @@ COPY --from=build /app/build/server server
 COPY ./drizzle drizzle
 COPY drizzle.config.ts drizzle.config.ts
 
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
 CMD ["/app/server"]
 
 EXPOSE 3000
