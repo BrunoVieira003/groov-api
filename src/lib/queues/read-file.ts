@@ -28,10 +28,11 @@ function normalizeArtists(...artists: string[]){
         return []
     }
 
+    artists = artists.filter(a => !a.includes('< ARTIST >'))
+
     let normalizedArtists: string[] = []
 
     for(let art of artists){
-        art = art.replaceAll('< ARTIST >', '').trim()
         let parsedArtists = new Set<string>()
         if(artistExactWhitelist.includes(art)){
             parsedArtists.add(art.trim())
