@@ -1,4 +1,4 @@
-artistDividers: [',', ';', '/', '\', 'feat.', 'ft.']
+artistDividers: ['feat.', 'ft.', ';', '/', '\', ',']
 
 artistExactMatch:
   - Earth, Wind & Fire

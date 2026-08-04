@@ -64,7 +64,7 @@ function normalizeArtists(...artists: string[]){
         }
     }
 
-    return normalizedArtists
+    return Array.from(new Set(normalizedArtists))
 }
 
 function getPictureFormat(picture: IPicture | undefined) {
@@ -80,17 +80,16 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         const filepath = path.join(filesDir, filename)
 
         const metadata = await parseFile(filepath, {duration: true});
-        console.log("metadata", metadata.common)
         await job.updateProgress(10, 'Metadata read')
-
+        
         const title = metadata.common.title || path.basename(filepath, path.extname(filepath))
         const duration = metadata.format.duration
-
+        
         const picture = getPicture(metadata.common.picture)
-
+        
         const [song] = (await db.insert(songs)
-            .values({
-                title,
+        .values({
+            title,
                 filename,
                 year: metadata.common.year,
                 duration,
@@ -106,34 +105,35 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 }
             })
             .returning())
-
-        if (picture) {
-            const picturePath = path.join(imagesDir, `${song.id}.webp`)
-            await new Bun.Image(picture.data)
+            
+            if (picture) {
+                const picturePath = path.join(imagesDir, `${song.id}.webp`)
+                await new Bun.Image(picture.data)
                 .webp({lossless: true})
                 .write(picturePath)
-
-            let prominentColor: string | null = null
-            let contrastColor: string | null = null
-            
-            const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
-
-            if (pallete.Vibrant) {
-                prominentColor = pallete.Vibrant.hex
-                contrastColor = pallete.Vibrant.bodyTextColor
-
-                await db
+                
+                let prominentColor: string | null = null
+                let contrastColor: string | null = null
+                
+                const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
+                
+                if (pallete.Vibrant) {
+                    prominentColor = pallete.Vibrant.hex
+                    contrastColor = pallete.Vibrant.bodyTextColor
+                    
+                    await db
                     .update(songs)
                     .set({
                         color: prominentColor,
                         contrastColor: contrastColor
                     })
                     .where(eq(songs.id, song.id))
+                }
             }
-        }
-
-        const songArtists = normalizeArtists(...metadata.common.artists || [], ...metadata.common.albumartists || [])
-        console.log(songArtists)
+            
+        const songArtists = normalizeArtists(metadata.common.artist || '', ...metadata.common.artists || [])
+        console.log("artists before", metadata.common.artist, metadata.common.artists)
+        console.log("artists after", songArtists)
 
         const insertedArtists: { id: string, name: string }[] = []
         for (let art of songArtists) {
@@ -179,20 +179,10 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                     album = storedAlbum
                 }
             }else{
-                const [insertedArtist] = (await db.insert(artists)
-                    .values({ name: 'unknown' })
-                    .onConflictDoUpdate({
-                        target: artists.name,
-                        set: {
-                            name: 'unknown'
-                        }
-                    })
-                    .returning())
-                
                 const [newAlbum] = await db.insert(albums)
                     .values({
                         title: albumName,
-                        artistId: insertedArtist.id
+                        artistId: insertedArtists[0].id
                     })
                     .returning()
                     .execute()
