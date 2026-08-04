@@ -23,6 +23,31 @@ function getPicture(picture: IPicture[] | undefined) {
     }
 }
 
+async function processCover(cover: IPicture, songId: string, albumId?: string){   
+    const picturePath = path.join(imagesDir, `${songId}.webp`)
+    await new Bun.Image(cover.data)
+    .webp({lossless: true})
+    .write(picturePath)
+        
+    let prominentColor: string | null = null
+    let contrastColor: string | null = null
+    
+    const pallete = await Vibrant.from(Buffer.from(cover.data)).getPalette()
+    
+    if (pallete.Vibrant) {
+        prominentColor = pallete.Vibrant.hex
+        contrastColor = pallete.Vibrant.bodyTextColor
+        
+        await db
+        .update(songs)
+        .set({
+            color: prominentColor,
+            contrastColor: contrastColor
+        })
+        .where(eq(songs.id, songId))
+    }
+}
+
 function normalizeArtists(...artists: string[]){
     if(!artists || artists.length === 0){
         return []
@@ -63,14 +88,89 @@ function normalizeArtists(...artists: string[]){
             normalizedArtists = [tag, ...normalizedArtists]
         }
     }
-
+    normalizedArtists = normalizedArtists.filter(v => v !== '')
     return Array.from(new Set(normalizedArtists))
 }
 
-function getPictureFormat(picture: IPicture | undefined) {
-    if (picture) {
-        return picture.format.split('/')[1]
+async function saveSong(filename: string, title: string, year: number | null = null, duration: number | null = null){
+    const song = await db.query.songs.findFirst({where: eq(songs.filename, filename)})
+    if(song){
+        song.title = title,
+        song.year = year,
+        song.duration = duration
+
+        await db
+        .update(songs)
+        .set(song)
+        .where(eq(songs.id, song.id))
+
+        return song
     }
+
+    const [newSong] = await db
+        .insert(songs)
+        .values({
+            filename,
+            title,
+            duration,
+            year
+        })
+        .returning()
+    
+    return newSong
+}
+
+async function saveArtists(...songArtists: string[]){
+    console.log("artists before", songArtists)
+    
+    songArtists = normalizeArtists(...songArtists)
+    
+    console.log("artists after", songArtists)
+
+    const insertedArtists: { id: string, name: string }[] = []
+    for (let art of songArtists) {
+        const [artist] = (await db.insert(artists)
+            .values({ name: art })
+            .onConflictDoUpdate({
+                target: artists.name,
+                set: {
+                    name: art
+                }
+            })
+            .returning())
+
+        insertedArtists.push(artist)
+    }
+
+    return insertedArtists
+}
+
+async function saveAlbum(title: string, albumArtistId: string){
+    console.log('artista do album', albumArtistId)
+    let album = await db.query.albums.findFirst({where: and(eq(albums.title, title))})
+    console.log('album encontrado', album?.id, album?.artistId)
+    if(!album){
+        console.log('album nao existia');
+        album = await db
+            .insert(albums)
+            .values({
+                title,
+                artistId: albumArtistId
+            })
+            .onConflictDoNothing()
+    }else if(album && !album.artistId){
+        console.log('album sem dono');
+
+        const [updatedAlbum] = await db
+            .update(albums)
+            .set({artistId: albumArtistId})
+            .where(eq(albums.id, album.id))
+            .returning()
+        
+        album = updatedAlbum
+    }
+        
+    return album
 }
 
 export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
@@ -84,137 +184,45 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         
         const title = metadata.common.title || path.basename(filepath, path.extname(filepath))
         const duration = metadata.format.duration
+        const year = metadata.common.year
         
-        const picture = getPicture(metadata.common.picture)
+        const song = await saveSong(filename, title, year, duration)
         
-        const [song] = (await db.insert(songs)
-        .values({
-            title,
-                filename,
-                year: metadata.common.year,
-                duration,
-                coverArtFormat: getPictureFormat(picture),
-            })
-            .onConflictDoUpdate({
-                target: songs.filename,
-                set: {
-                    title,
-                    year: metadata.common.year,
-                    duration,
-                    coverArtFormat: getPictureFormat(picture),
-                }
-            })
-            .returning())
-            
-            if (picture) {
-                const picturePath = path.join(imagesDir, `${song.id}.webp`)
-                await new Bun.Image(picture.data)
-                .webp({lossless: true})
-                .write(picturePath)
-                
-                let prominentColor: string | null = null
-                let contrastColor: string | null = null
-                
-                const pallete = await Vibrant.from(Buffer.from(picture.data)).getPalette()
-                
-                if (pallete.Vibrant) {
-                    prominentColor = pallete.Vibrant.hex
-                    contrastColor = pallete.Vibrant.bodyTextColor
-                    
-                    await db
-                    .update(songs)
-                    .set({
-                        color: prominentColor,
-                        contrastColor: contrastColor
-                    })
-                    .where(eq(songs.id, song.id))
-                }
-            }
-            
-        const songArtists = normalizeArtists(metadata.common.artist || '', ...metadata.common.artists || [])
-        console.log("artists before", metadata.common.artist, metadata.common.artists)
-        console.log("artists after", songArtists)
-
-        const insertedArtists: { id: string, name: string }[] = []
-        for (let art of songArtists) {
-            const [artist] = (await db.insert(artists)
-                .values({ name: art })
-                .onConflictDoUpdate({
-                    target: artists.name,
-                    set: {
-                        name: art
-                    }
-                })
-                .returning())
-
-            await db.insert(songsToArtists)
+        const songArtists = await saveArtists(metadata.common.artist || '', ...metadata.common.artists || [])
+        
+        for(let artist of songArtists){
+            await db
+                .insert(songsToArtists)
                 .values({ songId: song.id, artistId: artist.id })
                 .onConflictDoNothing()
-
-            insertedArtists.push(artist)
         }
 
-        const albumName = metadata.common.album
-        let album: typeof albums.$inferSelect
-        if (albumName) {
-            if (insertedArtists.length > 0){
-                const storedAlbum = await db.query.albums.findFirst({
-                    where: and(
-                        eq(albums.title, albumName),
-                        eq(albums.artistId, insertedArtists[0].id)
-                    )
-                })
-    
-                if (!storedAlbum) {
-                    const [newAlbum] = await db.insert(albums)
-                        .values({
-                            title: albumName,
-                            artistId: insertedArtists[0].id
-                        })
-                        .returning()
-                        .execute()
-    
-                    album = newAlbum
-                } else {
-                    album = storedAlbum
-                }
-            }else{
-                const [newAlbum] = await db.insert(albums)
-                    .values({
-                        title: albumName,
-                        artistId: insertedArtists[0].id
-                    })
-                    .returning()
-                    .execute()
-
-                album = newAlbum
-            }
-
-
+        if(metadata.common.album){
+            const [albumArtist] = await saveArtists(metadata.common.albumartist || '', ...metadata.common.albumartists || [])
+            const album = await saveAlbum(metadata.common.album, albumArtist.id)
             await db.update(songs)
                 .set({ albumId: album.id })
                 .where(eq(songs.id, song.id))
                 .execute()
-
-            if (picture && album) {
+            
+            const picture = getPicture(metadata.common.picture)
+            if(picture){
                 const picturePath = path.join(imagesDir, 'album', `${album.id}.webp`)
                 if (!existsSync(picturePath)) {
                     await new Bun.Image(picture.data)
                         .webp({lossless: true})
                         .write(picturePath)
-
-                    await db.update(albums)
-                        .set({
-                            ...album,
-                            coverArtFormat: getPictureFormat(picture)
-                        })
-                        .where(eq(albums.id, album.id))
-                        .execute()
                 }
             }
         }
+
+        const picture = getPicture(metadata.common.picture)
+        if(picture){
+            await processCover(picture, song.id, metadata.common.album)
+        }
     }
-})
+}
+)
 
 readFileQueue.on('active', (job) => {
     console.log(`Reading ${job.data.filename}...`)
