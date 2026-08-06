@@ -23,12 +23,19 @@ function getPicture(picture: IPicture[] | undefined) {
     }
 }
 
-async function processCover(cover: IPicture, songId: string, albumId?: string){   
-    const picturePath = path.join(imagesDir, 'song', `${songId}.webp`)
+async function saveImage(cover: IPicture, id: string, type: 'song' | 'album', override: boolean = true){   
+    const picturePath = path.join(imagesDir, type, `${id}.webp`)
+    const shouldSave = override || !existsSync(picturePath)
+
+    if(!shouldSave) return;
+
     await new Bun.Image(cover.data)
     .webp({lossless: true})
     .write(picturePath)
-        
+    
+}
+
+async function updatePallete(cover: IPicture, songId: string){
     let prominentColor: string | null = null
     let contrastColor: string | null = null
     
@@ -207,18 +214,14 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
             
             const picture = getPicture(metadata.common.picture)
             if(picture){
-                const picturePath = path.join(imagesDir, 'album', `${album.id}.webp`)
-                if (!existsSync(picturePath)) {
-                    await new Bun.Image(picture.data)
-                        .webp({lossless: true})
-                        .write(picturePath)
-                }
+                await saveImage(picture, album.id, 'album', false)
             }
         }
 
         const picture = getPicture(metadata.common.picture)
         if(picture){
-            await processCover(picture, song.id, metadata.common.album)
+            await saveImage(picture, song.id, 'song')
+            await updatePallete(picture, song.id)
         }
     }
 }
