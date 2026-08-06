@@ -24,7 +24,7 @@ function getPicture(picture: IPicture[] | undefined) {
 }
 
 async function processCover(cover: IPicture, songId: string, albumId?: string){   
-    const picturePath = path.join(imagesDir, `${songId}.webp`)
+    const picturePath = path.join(imagesDir, 'song', `${songId}.webp`)
     await new Bun.Image(cover.data)
     .webp({lossless: true})
     .write(picturePath)
@@ -158,7 +158,7 @@ async function saveAlbum(title: string, albumArtistId: string){
                 artistId: albumArtistId
             })
             .onConflictDoNothing()
-    }else if(album && !album.artistId){
+    }else if(album && !album.artistId && albumArtistId){
         console.log('album sem dono');
 
         const [updatedAlbum] = await db
@@ -199,7 +199,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
 
         if(metadata.common.album){
             const [albumArtist] = await saveArtists(metadata.common.albumartist || '', ...metadata.common.albumartists || [])
-            const album = await saveAlbum(metadata.common.album, albumArtist.id)
+            const album = await saveAlbum(metadata.common.album, albumArtist?.id)
             await db.update(songs)
                 .set({ albumId: album.id })
                 .where(eq(songs.id, song.id))
