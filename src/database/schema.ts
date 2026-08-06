@@ -6,7 +6,6 @@ export const albums = pgTable('albums', {
     title: varchar('name').notNull(),
     year: smallint(),
     artistId: uuid().references(() => artists.id, {onDelete: 'set null'}),
-    coverArtFormat: varchar('album_cover_art_format')
 })
 
 export const songs = pgTable('songs', {
@@ -15,7 +14,6 @@ export const songs = pgTable('songs', {
     year: smallint(),
     filename: varchar('filename').notNull().unique('song_filename_unique'),
     duration: integer('duration'),
-    coverArtFormat: varchar('cover_art_format'),
     color: varchar('color'),
     contrastColor: varchar('contrast_color'),
     albumId: uuid("album_id").references(() => albums.id, {onDelete: 'set null'}),

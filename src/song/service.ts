@@ -17,7 +17,6 @@ export default class SongService {
                 album: {
                     columns: {
                         artistId: false,
-                        coverArtFormat: false,
                     }
                 },
                 authors: {
@@ -116,7 +115,6 @@ export default class SongService {
                 album: {
                     columns: {
                         artistId: false,
-                        coverArtFormat: false,
                     }
                 },
                 authors: {
@@ -178,7 +176,6 @@ export default class SongService {
                 album: {
                     columns: {
                         artistId: false,
-                        coverArtFormat: false,
                     }
                 },
                 authors: {
