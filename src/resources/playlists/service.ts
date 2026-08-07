@@ -31,6 +31,7 @@ export class PlaylistService {
             where: eq(playlists.id, id),
             with: {
                 songs: {
+                    orderBy: ({trackNumber}, { asc }) => [asc(trackNumber)],
                     with: {
                         song: {
                             columns: {
@@ -47,7 +48,10 @@ export class PlaylistService {
                             }
                         }
                     },
-                    columns: {}
+                    columns: {
+                        id: true,
+                        trackNumber: true,
+                    }
                 }
             }
         })
@@ -59,7 +63,7 @@ export class PlaylistService {
         const result = {
             id: playlist.id,
             title: playlist.title,
-            songs: playlist.songs.map(son => ({ ...son.song, authors: son.song.authors.map(aut => aut.artist) }))
+            songs: playlist.songs.map(son => ({ ...son.song, trackNumber: son.trackNumber, relationId: son.id, authors: son.song.authors.map(aut => aut.artist) }))
         }
 
         return result
@@ -81,16 +85,19 @@ export class PlaylistService {
     }
 
     static async addSong(playlistId: string, songId: string) {
-        await this.getById(playlistId)
+        const playlist = await this.getById(playlistId)
 
         const song = await db.query.songs.findFirst({ where: eq(songs.id, songId) })
         if (!song) {
             throw new NotFoundError('Song not found')
         }
 
+        let nextTrackNumber = Math.max(...playlist.songs.map(s => s.trackNumber || -1), 0) + 1
+        console.log(nextTrackNumber)
         await db.insert(songsToPlaylists).values({
             playlistId,
-            songId
+            songId,
+            trackNumber: nextTrackNumber
         })
 
         const songCoverFilepath = path.join(imagesDir, 'song', `${songId}.webp`)
@@ -103,12 +110,25 @@ export class PlaylistService {
         }
     }
 
-    static async removeSong(playlistId: string, songId: string) {
+    static async removeSong(playlistId: string, relationId: string) {
         await db.delete(songsToPlaylists).where(and(
             eq(songsToPlaylists.playlistId, playlistId),
-            eq(songsToPlaylists.songId, songId)
+            eq(songsToPlaylists.id, relationId)
+            )
         )
-        )
+        const playlist = await this.getById(playlistId)
+
+        let nextTrackNumber = 1
+        for(let song of playlist.songs){
+            await db.update(songsToPlaylists)
+                .set({trackNumber: nextTrackNumber})
+                .where(eq(songsToPlaylists.id, song.relationId))
+                .execute()
+
+
+            nextTrackNumber += 1
+        }
+
     }
 
     static async search(title: string) {

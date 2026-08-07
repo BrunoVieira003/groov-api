@@ -37,5 +37,5 @@ export const playlistRouter = new Elysia({prefix: 'playlists'})
     }, {body: addSongSchema})
 
     .delete(':id/song', async ({params, body}) => {
-        await PlaylistService.removeSong(params.id, body.songId)
+        await PlaylistService.removeSong(params.id, body.relationId)
     }, {body: removeSongSchema})

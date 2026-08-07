@@ -17,5 +17,5 @@ export const addSongSchema = t.Object({
 })
 
 export const removeSongSchema = t.Object({
-    songId: t.String({format: 'uuid'})
+    relationId: t.String({format: 'uuid'})
 })

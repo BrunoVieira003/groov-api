@@ -66,8 +66,10 @@ export const playlistsRelations = relations(playlists, ({many}) => ({
 }))
 
 export const songsToPlaylists = pgTable('songs_to_playlists', {
+    id: uuid().primaryKey().defaultRandom(),
     songId: uuid().notNull().references(() => songs.id, {onDelete: 'cascade'}),
-    playlistId: uuid().notNull().references(() => playlists.id, {onDelete: 'cascade'})
+    playlistId: uuid().notNull().references(() => playlists.id, {onDelete: 'cascade'}),
+    trackNumber: integer()
 })
 
 export const songsToPlaylistsRelations = relations(songsToPlaylists, ({one}) => ({

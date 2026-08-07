@@ -92,6 +92,13 @@
       "when": 1786063808947,
       "tag": "0012_file_fingerprint",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1786139276092,
+      "tag": "0013_add_track_number_playlist",
+      "breakpoints": true
     }
   ]
 }
