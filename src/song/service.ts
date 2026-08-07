@@ -150,7 +150,6 @@ export default class SongService {
         }
 
         let filepath = path.join(imagesDir, 'song',`${song.id}.webp`)
-        console.log(filepath)
         if (!fs.existsSync(filepath) && !song.albumId) {
             throw new NotFoundError('Cover art file not found')
         }

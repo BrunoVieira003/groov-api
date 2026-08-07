@@ -9,3 +9,7 @@ export const getProgressParams = t.Object({
     ]),
     taskId: t.String()
 })
+
+export const scanFolderBody = t.Object({
+    deep: t.BooleanString({ default: false })
+})

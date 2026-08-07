@@ -85,6 +85,13 @@
       "when": 1786050429662,
       "tag": "0011_remove_coverArtFormat_field",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1786063808947,
+      "tag": "0012_file_fingerprint",
+      "breakpoints": true
     }
   ]
 }

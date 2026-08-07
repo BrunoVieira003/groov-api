@@ -1,12 +1,12 @@
 import Elysia from "elysia";
 import TaskService from "./service";
+import { scanFolderBody } from "./schema";
 
 export const taskRouter = new Elysia({ prefix: '/tasks' })
-    .post('scan-folder', async () => {
-        const result = await TaskService.createScanFolderTask()
-
+    .post('scan-folder', async ({ body }) => {
+        const result = await TaskService.createScanFolderTask(body.deep)
         return result
-    })
+    }, { body: scanFolderBody })
     .post('prune-songs', async () => {
         const result = await TaskService.createPruneSongsTask()
         return result

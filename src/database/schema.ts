@@ -17,6 +17,7 @@ export const songs = pgTable('songs', {
     color: varchar('color'),
     contrastColor: varchar('contrast_color'),
     albumId: uuid("album_id").references(() => albums.id, {onDelete: 'set null'}),
+    fingerprint: varchar('fingerprint'),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
     createdAt: timestamp('created_at').notNull().defaultNow(),
 });
