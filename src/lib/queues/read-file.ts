@@ -153,27 +153,26 @@ async function saveArtists(...songArtists: string[]){
     return insertedArtists
 }
 
-async function saveAlbum(title: string, albumArtistId: string){
+async function saveAlbum(title: string){
     let album = await db.query.albums.findFirst({where: and(eq(albums.title, title))})
     if(!album){
         album = await db
             .insert(albums)
             .values({
                 title,
-                artistId: albumArtistId
             })
             .onConflictDoNothing()
-    }else if(album && !album.artistId && albumArtistId){
-        const [updatedAlbum] = await db
-            .update(albums)
-            .set({artistId: albumArtistId})
-            .where(eq(albums.id, album.id))
-            .returning()
-        
-        album = updatedAlbum
     }
         
     return album
+}
+
+async function addAlbumArtist(albumId: string, albumArtistId: string){
+        await db
+            .update(albums)
+            .set({artistId: albumArtistId})
+            .where(eq(albums.id, albumId))
+            .returning()
 }
 
 export async function checkFingerprint(filename: string){
@@ -224,11 +223,14 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         }
 
         if(metadata.common.album){
+            const album = await saveAlbum(metadata.common.album)
+            console.log('- Album', album.title)
+
             const albumArtists = await saveArtists(metadata.common.albumartist || '', ...metadata.common.albumartists || [])
             if(albumArtists.length > 0){
-                const album = await saveAlbum(metadata.common.album, albumArtists[0].id)
-                console.log('- Album', album.title)
                 console.log('- Alb. Artists', albumArtists.map(a => a.name))
+
+                await addAlbumArtist(album.id, albumArtists[0].id)
                 await db.update(songs)
                     .set({ albumId: album.id })
                     .where(eq(songs.id, song.id))
