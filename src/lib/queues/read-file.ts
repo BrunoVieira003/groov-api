@@ -225,16 +225,17 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         if (metadata.common.album) {
             const album = await saveAlbum(metadata.common.album)
             console.log('- Album', album.title)
+            
+            await db.update(songs)
+            .set({ albumId: album.id })
+                .where(eq(songs.id, song.id))
+                .execute()
 
             const albumArtists = await saveArtists(metadata.common.albumartist || '', ...metadata.common.albumartists || [])
             if (albumArtists.length > 0) {
                 console.log('- Alb. Artists', albumArtists.map(a => a.name))
                 
                 await addAlbumArtist(album.id, albumArtists[0].id)
-                await db.update(songs)
-                .set({ albumId: album.id })
-                    .where(eq(songs.id, song.id))
-                    .execute()
                     
             }
             
