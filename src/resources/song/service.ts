@@ -4,8 +4,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { eq, ilike } from "drizzle-orm";
 import { albums, songs } from "../../database/schema";
-import { filesDir, imagesDir } from "../../constants";
-import { SortOptions } from "../../types";
+import { filesDir, imagesDir } from "../../lib/constants";
+import { SortOptions } from "../../lib/types";
 import { extractTimestampToSeconds, lyricHeaderRegex, lyricLineRegex } from "../../lib/lyrics";
 
 type SongSortOptions = SortOptions<typeof songs>

@@ -2,10 +2,10 @@ import { eq, ilike } from "drizzle-orm"
 import { db } from "../../database"
 import { artists } from "../../database/schema"
 import { file, NotFoundError } from "elysia"
-import { SortOptions } from "../../types"
+import { SortOptions } from "../../lib/types"
 import path from "node:path"
 import fs from "node:fs"
-import { imagesDir } from "../../constants"
+import { imagesDir } from "../../lib/constants"
 
 type ArtistSortOptions = SortOptions<typeof artists>
 

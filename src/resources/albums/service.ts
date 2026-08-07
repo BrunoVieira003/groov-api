@@ -4,8 +4,8 @@ import { albums, artists, songs, songsToArtists } from "../../database/schema"
 import { file, NotFoundError } from "elysia"
 import path from "node:path"
 import fs from "node:fs"
-import { imagesDir } from "../../constants"
-import { SortOptions } from "../../types"
+import { imagesDir } from "../../lib/constants"
+import { SortOptions } from "../../lib/types"
 
 type AlbumSortOptions = SortOptions<typeof albums>
 

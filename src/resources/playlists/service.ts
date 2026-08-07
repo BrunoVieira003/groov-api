@@ -4,7 +4,7 @@ import { playlists, songs, songsToPlaylists } from "../../database/schema";
 import { NotFoundError } from "elysia";
 import { existsSync } from 'fs'
 import path from "path";
-import { imagesDir } from "../../constants";
+import { imagesDir } from "../../lib/constants";
 
 interface UpdatePlaylist {
     title?: string

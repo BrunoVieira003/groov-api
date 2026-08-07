@@ -3,45 +3,45 @@ import path from "node:path";
 import { db } from "../../database";
 import { albums, artists, songs } from "../../database/schema";
 import { eq } from "drizzle-orm";
-import { imagesDir } from "../../constants";
+import { imagesDir } from "../constants";
 import fs from 'node:fs/promises'
 
-export const pruneAssetsQueue = new Bunqueue<{filenames: string[]}>('prune-assets', {
+export const pruneAssetsQueue = new Bunqueue<{ filenames: string[] }>('prune-assets', {
     embedded: true,
     processor: async (job) => {
         const { filenames } = job.data
-        
+
         let count = 0
-        for(let filename of filenames){
-            if(filename.includes('album')){
+        for (let filename of filenames) {
+            if (filename.includes('album')) {
                 const albumId = path.basename(filename, path.extname(filename))
                 const album = await db.query.albums.findFirst({
                     where: eq(albums.id, albumId)
                 })
-    
-                if(!album){
+
+                if (!album) {
                     const filepath = path.join(imagesDir, filename)
                     await Bun.file(filepath).delete()
                     console.log('File', filename, 'removed')
                 }
-            }else if(filename.includes('song')){
+            } else if (filename.includes('song')) {
                 const songId = path.basename(filename, path.extname(filename))
                 const song = await db.query.songs.findFirst({
                     where: eq(songs.id, songId)
                 })
-                
-                if(!song){
+
+                if (!song) {
                     const filepath = path.join(imagesDir, filename)
                     await Bun.file(filepath).delete()
                     console.log('File', filename, 'removed')
                 }
-            }else if(filename.includes('artist')){
+            } else if (filename.includes('artist')) {
                 const artistId = path.basename(filename, path.extname(filename))
                 const artist = await db.query.artists.findFirst({
                     where: eq(artists.id, artistId)
                 })
-                
-                if(!artist){
+
+                if (!artist) {
                     const filepath = path.join(imagesDir, filename)
                     await Bun.file(filepath).delete()
                     console.log('File', filename, 'removed')

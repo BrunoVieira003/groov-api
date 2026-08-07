@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { filesDir, imagesDir, supportedFileFormats } from '../../constants';
+import { filesDir, imagesDir, supportedFileFormats } from '../../lib/constants';
 import { db } from '../../database';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
