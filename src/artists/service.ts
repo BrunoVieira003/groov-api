@@ -1,8 +1,11 @@
 import { eq, ilike } from "drizzle-orm"
 import { db } from "../database"
 import { artists } from "../database/schema"
-import { NotFoundError } from "elysia"
+import { file, NotFoundError } from "elysia"
 import { SortOptions } from "../types"
+import path from "node:path"
+import fs from "node:fs"
+import { imagesDir } from "../constants"
 
 type ArtistSortOptions = SortOptions<typeof artists>
 
@@ -67,6 +70,20 @@ export default class ArtistService{
         }
 
         return result
+    }
+
+    static async getCoverByArtistId(id: string) {
+        const artist = await db.query.artists.findFirst({ where: eq(artists.id, id) })
+        if (!artist) {
+            throw new NotFoundError('Artist not found')
+        }
+
+        const filepath = path.join(imagesDir, 'artist', `${artist.id}.webp`)
+        if (!fs.existsSync(filepath)) {
+            throw new NotFoundError('Cover art file not found')
+        }
+
+        return file(filepath)
     }
 
     static async search(name: string){

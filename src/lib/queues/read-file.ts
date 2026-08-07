@@ -17,14 +17,16 @@ export interface ReadFileJobData {
     filename: string
 }
 
+type ImageCategory = 'song' | 'album' | 'artist'
+
 function getPicture(picture: IPicture[] | undefined) {
     if (picture && picture.length > 0) {
         return picture[0]
     }
 }
 
-async function saveImage(cover: IPicture, id: string, type: 'song' | 'album', override: boolean = true){   
-    const picturePath = path.join(imagesDir, type, `${id}.webp`)
+async function saveImage(cover: IPicture, id: string, category: ImageCategory, override: boolean = true){   
+    const picturePath = path.join(imagesDir, category, `${id}.webp`)
     const shouldSave = override || !existsSync(picturePath)
 
     if(!shouldSave) return;
@@ -222,6 +224,9 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         if(picture){
             await saveImage(picture, song.id, 'song')
             await updatePallete(picture, song.id)
+            for(let art of songArtists){
+                await saveImage(picture, art.id, 'artist')
+            }
         }
     }
 }

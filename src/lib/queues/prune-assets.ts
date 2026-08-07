@@ -1,7 +1,7 @@
 import { Bunqueue } from "bunqueue/client";
 import path from "node:path";
 import { db } from "../../database";
-import { albums, songs } from "../../database/schema";
+import { albums, artists, songs } from "../../database/schema";
 import { eq } from "drizzle-orm";
 import { imagesDir } from "../../constants";
 import fs from 'node:fs/promises'
@@ -24,13 +24,24 @@ export const pruneAssetsQueue = new Bunqueue<{filenames: string[]}>('prune-asset
                     await Bun.file(filepath).delete()
                     console.log('File', filename, 'removed')
                 }
-            }else{
+            }else if(filename.includes('song')){
                 const songId = path.basename(filename, path.extname(filename))
                 const song = await db.query.songs.findFirst({
                     where: eq(songs.id, songId)
                 })
                 
                 if(!song){
+                    const filepath = path.join(imagesDir, filename)
+                    await Bun.file(filepath).delete()
+                    console.log('File', filename, 'removed')
+                }
+            }else if(filename.includes('artist')){
+                const artistId = path.basename(filename, path.extname(filename))
+                const artist = await db.query.artists.findFirst({
+                    where: eq(artists.id, artistId)
+                })
+                
+                if(!artist){
                     const filepath = path.join(imagesDir, filename)
                     await Bun.file(filepath).delete()
                     console.log('File', filename, 'removed')
