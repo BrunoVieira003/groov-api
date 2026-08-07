@@ -1,24 +1,24 @@
 import fs from 'node:fs';
-import { filesDir, imagesDir, supportedFileFormats } from '../constants';
-import { db } from '../database';
+import { filesDir, imagesDir, supportedFileFormats } from '../../constants';
+import { db } from '../../database';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { readFileQueue } from '../lib/queues/read-file';
-import { pruneSongsQueue } from '../lib/queues/prune-songs';
-import { pruneAssetsQueue } from '../lib/queues/prune-assets';
-import { pruneAlbumsQueue } from '../lib/queues/prune-albums';
-import { pruneArtistsQueue } from '../lib/queues/prune-artists';
+import { readFileQueue } from '../../lib/queues/read-file';
+import { pruneSongsQueue } from '../../lib/queues/prune-songs';
+import { pruneAssetsQueue } from '../../lib/queues/prune-assets';
+import { pruneAlbumsQueue } from '../../lib/queues/prune-albums';
+import { pruneArtistsQueue } from '../../lib/queues/prune-artists';
 
 function getAllFiles(dir: string, files: string[] = [], baseDir?: string): string[] {
     const absoluteDir = path.resolve(dir);
     const absoluteBaseDir = baseDir ? path.resolve(baseDir) : absoluteDir;
 
     const foundFiles = fs.readdirSync(absoluteDir);
-    
+
     for (let found of foundFiles) {
         const foundpath = path.join(absoluteDir, found);
         const isDirectory = fs.statSync(foundpath).isDirectory();
-        
+
         if (isDirectory) {
             getAllFiles(foundpath, files, absoluteBaseDir);
         } else {
@@ -35,8 +35,8 @@ export default class TaskService {
         const filenames = getAllFiles(filesDir)
 
         const songFiles = filenames.filter(fil => {
-            for (let fileformat of supportedFileFormats){
-                if(fil.endsWith(fileformat)){
+            for (let fileformat of supportedFileFormats) {
+                if (fil.endsWith(fileformat)) {
                     return true
                 }
             }
@@ -47,7 +47,7 @@ export default class TaskService {
         const jobs = await readFileQueue.addBulk(songFiles.map(filename => {
             return {
                 name: filename,
-                data: {filename, deep},
+                data: { filename, deep },
             }
         }))
 

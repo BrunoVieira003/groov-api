@@ -1,12 +1,12 @@
 import { file, NotFoundError } from "elysia";
-import { db } from "../database";
+import { db } from "../../database";
 import path from 'node:path';
 import fs from 'node:fs';
 import { eq, ilike } from "drizzle-orm";
-import { albums, songs } from "../database/schema";
-import { filesDir, imagesDir } from "../constants";
-import { SortOptions } from "../types";
-import { extractTimestampToSeconds, lyricHeaderRegex, lyricLineRegex } from "../lib/lyrics";
+import { albums, songs } from "../../database/schema";
+import { filesDir, imagesDir } from "../../constants";
+import { SortOptions } from "../../types";
+import { extractTimestampToSeconds, lyricHeaderRegex, lyricLineRegex } from "../../lib/lyrics";
 
 type SongSortOptions = SortOptions<typeof songs>
 
@@ -149,7 +149,7 @@ export default class SongService {
             throw new NotFoundError('Song not found')
         }
 
-        let filepath = path.join(imagesDir, 'song',`${song.id}.webp`)
+        let filepath = path.join(imagesDir, 'song', `${song.id}.webp`)
         if (!fs.existsSync(filepath) && !song.albumId) {
             throw new NotFoundError('Cover art file not found')
         }

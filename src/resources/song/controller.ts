@@ -3,8 +3,8 @@ import SongService from "./service";
 import { RangeHeaderSchema, songQuerySchema, uploadBodySchema } from "./schema";
 import { write } from "bun";
 import path from "node:path"
-import { filesDir } from "../constants";
-import { readFileQueue } from "../lib/queues/read-file";
+import { filesDir } from "../../constants";
+import { readFileQueue } from "../../lib/queues/read-file";
 import { createReadStream } from "node:fs";
 
 export const songRouter = new Elysia({ prefix: '/songs' })

@@ -1,11 +1,11 @@
 import { and, eq, ilike, sql } from "drizzle-orm"
-import { db } from "../database"
-import { albums, artists, songs, songsToArtists } from "../database/schema"
+import { db } from "../../database"
+import { albums, artists, songs, songsToArtists } from "../../database/schema"
 import { file, NotFoundError } from "elysia"
 import path from "node:path"
 import fs from "node:fs"
-import { imagesDir } from "../constants"
-import { SortOptions } from "../types"
+import { imagesDir } from "../../constants"
+import { SortOptions } from "../../types"
 
 type AlbumSortOptions = SortOptions<typeof albums>
 
@@ -23,7 +23,7 @@ export class AlbumService {
 
         return file(filepath)
     }
-    
+
     static async getAll(sort: AlbumSortOptions) {
         const albumList = await db.query.albums.findMany({
             columns: {
@@ -78,7 +78,7 @@ export class AlbumService {
         }
     }
 
-    static async getFeaturedArtists(id: string){
+    static async getFeaturedArtists(id: string) {
         const featArtists = await db
             .select({
                 id: artists.id,
@@ -89,22 +89,22 @@ export class AlbumService {
             .innerJoin(songs, eq(songsToArtists.songId, songs.id))
             .where(eq(songs.albumId, id))
             .groupBy(artists.id)
-        
+
         return featArtists
     }
 
-    static async search(title: string){
-        const albumList = await db.query.albums.findMany({ 
+    static async search(title: string) {
+        const albumList = await db.query.albums.findMany({
             where: ilike(albums.title, `%${title}%`),
         })
-    
+
         const result = albumList.map((album) => {
             return {
                 id: album.id,
                 title: album.title,
             }
         })
-    
+
         return result
     }
 }

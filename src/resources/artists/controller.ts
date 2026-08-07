@@ -1,11 +1,11 @@
 import Elysia, { NotFoundError } from "elysia";
-import { db } from "../database";
+import { db } from "../../database";
 import { eq } from "drizzle-orm";
-import { artists } from "../database/schema";
+import { artists } from "../../database/schema";
 import ArtistService from "./service";
 import { artistQuerySchema } from "./schema";
 
-export const artistRouter = new Elysia({prefix: '/artists'})
+export const artistRouter = new Elysia({ prefix: '/artists' })
     .get('', async ({ query }) => {
         const artists = await ArtistService.getAll({
             field: query.sortField,
@@ -13,9 +13,9 @@ export const artistRouter = new Elysia({prefix: '/artists'})
         })
 
         return { artists }
-    }, {query: artistQuerySchema})
+    }, { query: artistQuerySchema })
 
-    .get('/:id', async ({params}) => {
+    .get('/:id', async ({ params }) => {
         const artist = ArtistService.getById(params.id)
         return artist
     })

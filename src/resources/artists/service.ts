@@ -1,23 +1,23 @@
 import { eq, ilike } from "drizzle-orm"
-import { db } from "../database"
-import { artists } from "../database/schema"
+import { db } from "../../database"
+import { artists } from "../../database/schema"
 import { file, NotFoundError } from "elysia"
-import { SortOptions } from "../types"
+import { SortOptions } from "../../types"
 import path from "node:path"
 import fs from "node:fs"
-import { imagesDir } from "../constants"
+import { imagesDir } from "../../constants"
 
 type ArtistSortOptions = SortOptions<typeof artists>
 
-export default class ArtistService{
-    static async getAll(sort: ArtistSortOptions){
+export default class ArtistService {
+    static async getAll(sort: ArtistSortOptions) {
         const artists = await db.query.artists.findMany({
             orderBy: (artists, order) => order[sort.order](artists[sort.field])
         })
         return artists
     }
 
-    static async getById(id: string){
+    static async getById(id: string) {
         const artist = await db.query.artists.findFirst({
             where: eq(artists.id, id),
             with: {
@@ -33,7 +33,7 @@ export default class ArtistService{
                             columns: { filename: false },
                             with: {
                                 album: true,
-                                authors:  {
+                                authors: {
                                     columns: {},
                                     with: {
                                         artist: true
@@ -45,7 +45,7 @@ export default class ArtistService{
                 }
             }
         })
-        if(!artist){
+        if (!artist) {
             return new NotFoundError('Song not found')
         }
 
@@ -86,18 +86,18 @@ export default class ArtistService{
         return file(filepath)
     }
 
-    static async search(name: string){
-        const artistList = await db.query.artists.findMany({ 
+    static async search(name: string) {
+        const artistList = await db.query.artists.findMany({
             where: ilike(artists.name, `%${name}%`),
         })
-    
+
         const result = artistList.map((artist) => {
             return {
                 id: artist.id,
                 name: artist.name,
             }
         })
-    
+
         return result
     }
 }
