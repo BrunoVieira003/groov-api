@@ -191,6 +191,7 @@ export async function checkFingerprint(filename: string){
 
 export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
     embedded: true,
+    concurrency: 1,
     processor: async (job) => {
         const { filename, deep } = job.data
         const filepath = path.join(filesDir, filename)
@@ -200,17 +201,20 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
             console.log(`No changes detected on ${filename}. Skipping...`)
             return
         }
-
+        
         const metadata = await parseFile(filepath, {duration: true});
-        await job.updateProgress(10, 'Metadata read')
         
         const title = metadata.common.title || path.basename(filepath, path.extname(filepath))
         const duration = metadata.format.duration
         const year = metadata.common.year
         
         const song = await saveSong(filename, title, year, duration, checking.fingerprint)
-        
+        console.log('- Title', title)
+        console.log('- Duration', duration)
+        console.log('- Year', year)
+
         const songArtists = await saveArtists(metadata.common.artist || '', ...metadata.common.artists || [])
+        console.log("- Artists", songArtists.map(a => a.name))
         
         for(let artist of songArtists){
             await db
@@ -223,6 +227,8 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
             const albumArtists = await saveArtists(metadata.common.albumartist || '', ...metadata.common.albumartists || [])
             if(albumArtists.length > 0){
                 const album = await saveAlbum(metadata.common.album, albumArtists[0].id)
+                console.log('- Album', album.title)
+                console.log('- Alb. Artists', albumArtists.map(a => a.name))
                 await db.update(songs)
                     .set({ albumId: album.id })
                     .where(eq(songs.id, song.id))
@@ -248,13 +254,15 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
 )
 
 readFileQueue.on('active', (job) => {
-    console.log(`Reading ${job.data.filename}...`)
+    console.group(job.data.filename)
 })
 
 readFileQueue.on('failed', (job, error) => {
     console.log(`Reading ${job.data.filename} failed. ${error.message}`)
+    console.groupEnd()
 })
 
 readFileQueue.on('completed', (job) => {
     console.log(`${job.data.filename} successfully read`)
+    console.groupEnd()
 })
