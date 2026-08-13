@@ -1,5 +1,5 @@
 import Elysia, { status } from "elysia";
-import { addSongSchema, changePlaylistCoverSchema, createPlaylistSchema, removeSongSchema, updatePlaylistSchema } from "./schema";
+import { addSongSchema, changePlaylistCoverSchema, createPlaylistSchema, removeSongSchema, reorderPlaylistSchema, updatePlaylistSchema } from "./schema";
 import { PlaylistService } from "./service";
 
 export const playlistRouter = new Elysia({prefix: 'playlists'})
@@ -25,6 +25,10 @@ export const playlistRouter = new Elysia({prefix: 'playlists'})
     .patch(':id/cover', async ({params, body}) => {
         await PlaylistService.changeCover(params.id, body.file)
     }, {body: changePlaylistCoverSchema})
+
+    .patch(':id/reorder', async ({params, body}) => {
+        await PlaylistService.reorder(params.id, body.relationIds)
+    }, {body: reorderPlaylistSchema})
 
     .delete(':id', async ({params}) => {
         await PlaylistService.delete(params.id)

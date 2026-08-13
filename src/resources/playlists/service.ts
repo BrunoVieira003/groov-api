@@ -154,4 +154,20 @@ export class PlaylistService {
             .webp({ lossless: true })
             .write(playlistsCoverFilepath)
     }
+
+    static async reorder(playlistId: string, relationIds: string[]){
+        await this.getById(playlistId)
+
+        let trackNumber = 1
+        for(let id of relationIds){
+            await db
+            .update(songsToPlaylists)
+            .set({
+                trackNumber
+            })
+            .where(eq(songsToPlaylists.id, id))
+
+            trackNumber++
+        }
+    }
 }
