@@ -156,11 +156,12 @@ async function saveArtists(...songArtists: string[]) {
 async function saveAlbum(title: string) {
     let album = await db.query.albums.findFirst({ where: and(eq(albums.title, title)) })
     if (!album) {
-        album = await db
+        [album] = await db
             .insert(albums)
             .values({
                 title,
             })
+            .returning()
             .onConflictDoNothing()
     }
 
