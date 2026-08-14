@@ -29,6 +29,7 @@ function getPicture(picture: IPicture[] | undefined) {
 async function saveImage(cover: IPicture, id: string, category: ImageCategory, override: boolean = true) {
     const picturePath = path.join(imagesDir, category, `${id}.webp`)
     const shouldSave = override || !existsSync(picturePath)
+    console.log('shouldSave', shouldSave)
 
     if (!shouldSave) return;
 
@@ -154,18 +155,20 @@ async function saveArtists(...songArtists: string[]) {
 }
 
 async function saveAlbum(title: string) {
-    let album = await db.query.albums.findFirst({ where: and(eq(albums.title, title)) })
-    if (!album) {
-        [album] = await db
-            .insert(albums)
-            .values({
-                title,
-            })
-            .returning()
-            .onConflictDoNothing()
+    const album = await db.query.albums.findFirst({
+        where: eq(albums.title, title),
+    })
+
+    if (album) {
+        return album
     }
 
-    return album
+    const [newAlbum] = await db
+        .insert(albums)
+        .values({ title })
+        .returning()
+
+    return newAlbum
 }
 
 async function addAlbumArtist(albumId: string, albumArtistId: string) {
@@ -247,6 +250,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         }
 
         const picture = getPicture(metadata.common.picture)
+        console.log('picture', !!picture)
         if (picture) {
             await saveImage(picture, song.id, 'song')
             await updatePallete(picture, song.id)
