@@ -15,7 +15,7 @@ const artistCompositeWhitelist = whitelist.artistCompositeMatch as Record<string
 
 export interface ReadFileJobData {
     filename: string,
-    deep?: boolean
+    skipScanned?: boolean
 }
 
 type ImageCategory = 'song' | 'album' | 'artist'
@@ -196,11 +196,11 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
     embedded: true,
     concurrency: 1,
     processor: async (job) => {
-        const { filename, deep } = job.data
+        const { filename, skipScanned } = job.data
         const filepath = path.join(filesDir, filename)
 
         const checking = await checkFingerprint(filename)
-        if (!deep && !checking.needsUpdate) {
+        if (skipScanned && !checking.needsUpdate) {
             console.log(`No changes detected on ${filename}. Skipping...`)
             return
         }

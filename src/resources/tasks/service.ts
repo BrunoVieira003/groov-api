@@ -31,7 +31,7 @@ function getAllFiles(dir: string, files: string[] = [], baseDir?: string): strin
 }
 
 export default class TaskService {
-    static async createScanFolderTask(deep: boolean = false) {
+    static async createScanFolderTask(skipScanned: boolean) {
         const filenames = getAllFiles(filesDir)
 
         const songFiles = filenames.filter(fil => {
@@ -47,7 +47,7 @@ export default class TaskService {
         const jobs = await readFileQueue.addBulk(songFiles.map(filename => {
             return {
                 name: filename,
-                data: { filename, deep },
+                data: { filename, skipScanned },
             }
         }))
 

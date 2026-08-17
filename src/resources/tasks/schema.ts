@@ -11,5 +11,5 @@ export const getProgressParams = t.Object({
 })
 
 export const scanFolderBody = t.Object({
-    deep: t.BooleanString({ default: false })
+    skipScanned: t.BooleanString({ default: true })
 })

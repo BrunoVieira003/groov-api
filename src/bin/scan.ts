@@ -4,6 +4,7 @@ import { readFileQueue } from "../lib/queues/read-file";
 import path from 'path'
 import fs from 'fs'
 import { filesDir, supportedFileFormats } from "../lib/constants";
+import { argv } from "bun";
 
 function getAllFiles(dir: string, files: string[] = [], baseDir?: string): string[] {
     const absoluteDir = path.resolve(dir);
@@ -42,7 +43,7 @@ const songFiles = allFiles.filter(fil => {
 
     return false
 })
-const jobData = songFiles.map(f => ({ name: 'scan', data: { filename: f, deep: true } }))
+const jobData = songFiles.map(f => ({ name: 'scan', data: { filename: f, skipScanned: argv.includes('--skipScanned') } }))
 await readFileQueue.addBulk(jobData)
 
 readFileQueue.on('drained', finish)

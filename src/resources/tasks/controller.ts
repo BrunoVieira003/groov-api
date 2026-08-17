@@ -4,7 +4,7 @@ import { scanFolderBody } from "./schema";
 
 export const taskRouter = new Elysia({ prefix: '/tasks' })
     .post('scan-folder', async ({ body }) => {
-        const result = await TaskService.createScanFolderTask(body.deep)
+        const result = await TaskService.createScanFolderTask(body.skipScanned)
         return result
     }, { body: scanFolderBody })
     .post('prune-songs', async () => {
