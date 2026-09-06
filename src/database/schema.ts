@@ -24,8 +24,6 @@ export const songs = pgTable('songs', {
     year: smallint(),
     filename: varchar('filename').notNull().unique('song_filename_unique'),
     duration: integer('duration'),
-    color: varchar('color'),
-    contrastColor: varchar('contrast_color'),
     colors: jsonb().$type<Palette>(),
     albumId: uuid("album_id").references(() => albums.id, {onDelete: 'set null'}),
     fingerprint: varchar('fingerprint'),
