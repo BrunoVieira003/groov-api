@@ -39,10 +39,7 @@ async function saveImage(cover: IPicture, id: string, category: ImageCategory, o
 
 }
 
-async function updatePalette(cover: IPicture, songId: string) {
-    let prominentColor: string | null = null
-    let contrastColor: string | null = null
-
+async function updateSongPalette(cover: IPicture, songId: string) {
     const palette = await Vibrant.from(Buffer.from(cover.data)).getPalette()
 
     await db
@@ -58,6 +55,24 @@ async function updatePalette(cover: IPicture, songId: string) {
             }
         })
         .where(eq(songs.id, songId))
+}
+
+async function updateAlbumPalette(cover: IPicture, albumId: string) {
+    const palette = await Vibrant.from(Buffer.from(cover.data)).getPalette()
+
+    await db
+        .update(albums)
+        .set({
+            colors: {
+                vibrant: palette.Vibrant?.hex,
+                darkVibrant: palette.DarkVibrant?.hex,
+                lightVibrant: palette.LightVibrant?.hex,
+                muted: palette.Muted?.hex,
+                darkMuted: palette.DarkMuted?.hex,
+                lightMuted: palette.LightMuted?.hex,
+            }
+        })
+        .where(eq(albums.id, albumId))
 }
 
 function normalizeArtists(...artists: string[]) {
@@ -247,6 +262,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
             const picture = getPicture(metadata.common.picture)
             if (picture) {
                 await saveImage(picture, album.id, 'album', false)
+                await updateAlbumPalette(picture, album.id)
             }
         }
 
@@ -254,7 +270,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         console.log('picture', !!picture)
         if (picture) {
             await saveImage(picture, song.id, 'song')
-            await updatePalette(picture, song.id)
+            await updateSongPalette(picture, song.id)
             for (let art of songArtists) {
                 await saveImage(picture, art.id, 'artist')
             }

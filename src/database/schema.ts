@@ -14,6 +14,7 @@ export const albums = pgTable('albums', {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar('name').notNull(),
     year: smallint(),
+    colors: jsonb().$type<Palette>(),
     artistId: uuid().references(() => artists.id, {onDelete: 'set null'}),
 })
 
