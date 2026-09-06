@@ -1,10 +1,20 @@
 import { relations } from "drizzle-orm";
-import { integer, numeric, pgTable, primaryKey, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, primaryKey, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+
+export interface Palette{
+    vibrant: string | undefined
+    darkVibrant: string | null | undefined
+    lightVibrant: string | null | undefined
+    muted: string | null | undefined
+    darkMuted: string | null | undefined
+    lightMuted: string | null | undefined
+}
 
 export const albums = pgTable('albums', {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar('name').notNull(),
     year: smallint(),
+    colors: jsonb().$type<Palette>(),
     artistId: uuid().references(() => artists.id, {onDelete: 'set null'}),
 })
 
@@ -14,8 +24,7 @@ export const songs = pgTable('songs', {
     year: smallint(),
     filename: varchar('filename').notNull().unique('song_filename_unique'),
     duration: integer('duration'),
-    color: varchar('color'),
-    contrastColor: varchar('contrast_color'),
+    colors: jsonb().$type<Palette>(),
     albumId: uuid("album_id").references(() => albums.id, {onDelete: 'set null'}),
     fingerprint: varchar('fingerprint'),
     updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
