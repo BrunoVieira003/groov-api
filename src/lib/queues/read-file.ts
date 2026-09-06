@@ -241,6 +241,9 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 
                 await addAlbumArtist(album.id, albumArtists[0].id)
                     
+            }else if(songArtists.length > 0){
+                console.log('- Alb. Artists', songArtists.map(a => a.name))
+                await addAlbumArtist(album.id, songArtists[0].id)
             }
             
             const picture = getPicture(metadata.common.picture)
