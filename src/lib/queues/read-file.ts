@@ -39,24 +39,25 @@ async function saveImage(cover: IPicture, id: string, category: ImageCategory, o
 
 }
 
-async function updatePallete(cover: IPicture, songId: string) {
+async function updatePalette(cover: IPicture, songId: string) {
     let prominentColor: string | null = null
     let contrastColor: string | null = null
 
-    const pallete = await Vibrant.from(Buffer.from(cover.data)).getPalette()
+    const palette = await Vibrant.from(Buffer.from(cover.data)).getPalette()
 
-    if (pallete.Vibrant) {
-        prominentColor = pallete.Vibrant.hex
-        contrastColor = pallete.Vibrant.bodyTextColor
-
-        await db
-            .update(songs)
-            .set({
-                color: prominentColor,
-                contrastColor: contrastColor
-            })
-            .where(eq(songs.id, songId))
-    }
+    await db
+        .update(songs)
+        .set({
+            colors: {
+                vibrant: palette.Vibrant?.hex,
+                darkVibrant: palette.DarkVibrant?.hex,
+                lightVibrant: palette.LightVibrant?.hex,
+                muted: palette.Muted?.hex,
+                darkMuted: palette.DarkMuted?.hex,
+                lightMuted: palette.LightMuted?.hex,
+            }
+        })
+        .where(eq(songs.id, songId))
 }
 
 function normalizeArtists(...artists: string[]) {
@@ -253,7 +254,7 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
         console.log('picture', !!picture)
         if (picture) {
             await saveImage(picture, song.id, 'song')
-            await updatePallete(picture, song.id)
+            await updatePalette(picture, song.id)
             for (let art of songArtists) {
                 await saveImage(picture, art.id, 'artist')
             }
