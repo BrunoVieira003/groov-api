@@ -18,6 +18,14 @@ export const playlistRouter = new Elysia({prefix: 'playlists'})
         return playlists
     })
 
+    .get('/:id/cover', async ({ params, set }) => {
+        const songFile = await PlaylistService.getCoverByPlaylistId(params.id)
+
+        set.headers["content-type"] = songFile.type
+
+        return songFile
+    })
+
     .patch(':id', async ({params, body}) => {
         await PlaylistService.update(params.id, body)
     }, {body: updatePlaylistSchema})
