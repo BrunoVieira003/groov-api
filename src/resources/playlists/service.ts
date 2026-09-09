@@ -71,7 +71,7 @@ export class PlaylistService {
     }
 
     static async getCoverByPlaylistId(id: string) {
-        const playlist = await db.query.artists.findFirst({ where: eq(playlists.id, id) })
+        const playlist = await db.query.playlists.findFirst({ where: eq(playlists.id, id) })
         if (!playlist) {
             throw new NotFoundError('Playlist not found')
         }
