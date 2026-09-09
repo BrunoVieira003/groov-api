@@ -56,7 +56,7 @@ export default class ArtistService {
                 id: song.id,
                 title: song.title,
                 year: song.year,
-                color: song.color,
+                colors: song.colors,
                 album: song.album,
                 authors: song.authors.map(a => a.artist)
             }

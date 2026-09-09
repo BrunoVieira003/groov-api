@@ -86,11 +86,12 @@ export class PlaylistService {
 
     static async update(playlistId: string, data: UpdatePlaylist) {
         const playlist = await this.getById(playlistId)
-        if (data.title) {
-            playlist.title = data.title
-        }
 
-        await db.update(playlists).set(playlist)
+        await db.update(playlists)
+        .set({
+            title: data.title ?? playlist.title
+        })
+        .where(eq(playlists.id, playlistId))
     }
 
     static async delete(playlistId: string) {
