@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { songRouter } from "./resources/song/controller";
-import { migrate } from 'drizzle-orm/bun-sql/migrator'
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { db } from "./database";
 import cors from "@elysiajs/cors";
 import { artistRouter } from "./resources/artists/controller";
@@ -11,7 +11,7 @@ import { albumRouter } from "./resources/albums/controller";
 import { sql } from "drizzle-orm";
 
 
-await migrate(db, { migrationsFolder: './drizzle' })
+migrate(db, { migrationsFolder: './drizzle' })
 
 
 const app = new Elysia()
@@ -24,7 +24,7 @@ const app = new Elysia()
   .use(toolsRouter)
   .get('/health', async ({ status }) => {
     try {
-      await db.execute(sql`SELECT 1`)
+      await db.run(sql`SELECT 1`)
 
       return status(200, { status: 'Ok' })
     } catch (e) {

@@ -1,6 +1,7 @@
 # data
 /music
 /images
+*.db
 
 # dependencies
 /node_modules

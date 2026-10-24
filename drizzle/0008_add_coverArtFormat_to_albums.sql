@@ -1,1 +1,0 @@
-ALTER TABLE "albums" ADD COLUMN "album_cover_art_format" varchar;
