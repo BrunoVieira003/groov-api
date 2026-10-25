@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, jsonb, pgTable, primaryKey, smallint, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export interface Palette{
     vibrant: string | undefined
@@ -10,25 +10,35 @@ export interface Palette{
     lightMuted: string | null | undefined
 }
 
-export const albums = pgTable('albums', {
-    id: uuid().primaryKey().defaultRandom(),
-    title: varchar('name').notNull(),
-    year: smallint(),
-    colors: jsonb().$type<Palette>(),
+const uuid = (name?: string) => text(name).$defaultFn(() => crypto.randomUUID())
+const createdAt = (name?: string) => text(name).$default(() => new Date().toISOString()).notNull()
+const updatedAt = (name?: string) => text(name).$onUpdate(() => new Date().toISOString()).notNull()
+
+const colors = (name: string) => text(name, { mode: 'json'}).$type<Palette>()
+
+const timestamps = {
+    createdAt: createdAt('created_at'),
+    updatedAt: updatedAt('updated_at')
+}
+
+export const albums = sqliteTable('albums', {
+    id: uuid().primaryKey(),
+    title: text('name').notNull(),
+    year: integer(),
+    colors: colors('colors'),
     artistId: uuid().references(() => artists.id, {onDelete: 'set null'}),
 })
 
-export const songs = pgTable('songs', {
-    id: uuid().primaryKey().defaultRandom(),
-    title: varchar('title').notNull(),
-    year: smallint(),
-    filename: varchar('filename').notNull().unique('song_filename_unique'),
+export const songs = sqliteTable('songs', {
+    id: uuid().primaryKey(),
+    title: text('title').notNull(),
+    year: integer(),
+    filename: text('filename').notNull().unique('song_filename_unique'),
     duration: integer('duration'),
-    colors: jsonb().$type<Palette>(),
+    colors: colors('colors'),
     albumId: uuid("album_id").references(() => albums.id, {onDelete: 'set null'}),
-    fingerprint: varchar('fingerprint'),
-    updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
+    fingerprint: text('fingerprint'),
+    ...timestamps
 });
 
 export const songsRelations = relations(songs, ({one, many}) => ({
@@ -37,9 +47,9 @@ export const songsRelations = relations(songs, ({one, many}) => ({
     playlists: many(songsToPlaylists)
 }))
 
-export const artists = pgTable('artists', {
-    id: uuid().primaryKey().defaultRandom(),
-    name: varchar('name').notNull().unique('artist_name_unique')
+export const artists = sqliteTable('artists', {
+    id: uuid().primaryKey(),
+    name: text('name').notNull().unique('artist_name_unique')
 })
 
 export const artistsRelations = relations(artists, ({many}) => ({
@@ -47,7 +57,7 @@ export const artistsRelations = relations(artists, ({many}) => ({
     albums: many(albums)
 }))
 
-export const songsToArtists = pgTable('songs_to_artists', {
+export const songsToArtists = sqliteTable('songs_to_artists', {
     songId: uuid().notNull().references(() => songs.id, {onDelete: 'cascade'}),
     artistId: uuid().notNull().references(() => artists.id, {onDelete: 'cascade'})
 }, (t) => [
@@ -65,17 +75,17 @@ export const songsToArtistsRelations = relations(songsToArtists, ({one}) => ({
     })
 }))
 
-export const playlists = pgTable('playlists', {
-    id: uuid().primaryKey().defaultRandom(),
-    title: varchar('title').notNull(),
+export const playlists = sqliteTable('playlists', {
+    id: uuid().primaryKey(),
+    title: text('title').notNull(),
 })
 
 export const playlistsRelations = relations(playlists, ({many}) => ({
     songs: many(songsToPlaylists)
 }))
 
-export const songsToPlaylists = pgTable('songs_to_playlists', {
-    id: uuid().primaryKey().defaultRandom(),
+export const songsToPlaylists = sqliteTable('songs_to_playlists', {
+    id: uuid().primaryKey(),
     songId: uuid().notNull().references(() => songs.id, {onDelete: 'cascade'}),
     playlistId: uuid().notNull().references(() => playlists.id, {onDelete: 'cascade'}),
     trackNumber: integer()

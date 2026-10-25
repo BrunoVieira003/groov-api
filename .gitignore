@@ -2,6 +2,7 @@
 /music
 /images
 /assets
+*.db
 
 # dependencies
 /node_modules
