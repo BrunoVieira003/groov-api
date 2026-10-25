@@ -1,26 +1,14 @@
 services:
-  db:
-    image: postgres:16-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: groov
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql
-    
   api:
-    image: brunovieira003/groov-api:latest
+    image: groov-api:sqlite
+    ports:
+      - 3000:3000
     enviroment:
-      - DATABASE_URL: postgres://postgres:postgres@db:5432/groov
-    depends_on: [db]
+      - DATABASE_URL: ./groov.db
     volumes:
       - images:/app/images
       - music:/app/music
     restart: unless-stopped
 volumes:
-  pgdata:
   images:
   music:
