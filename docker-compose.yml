@@ -17,10 +17,10 @@ services:
       - DATABASE_URL: postgres://postgres:postgres@db:5432/groov
     depends_on: [db]
     volumes:
-      - images:/app/images
+      - assets:/app/assets
       - music:/app/music
     restart: unless-stopped
 volumes:
   pgdata:
-  images:
+  assets:
   music:
