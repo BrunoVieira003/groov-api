@@ -9,6 +9,7 @@ import { toolsRouter } from "./resources/tools/controller";
 import { playlistRouter } from "./resources/playlists/controller";
 import { albumRouter } from "./resources/albums/controller";
 import { sql } from "drizzle-orm";
+import openapi from "@elysia/openapi";
 
 
 await migrate(db, { migrationsFolder: './drizzle' })
@@ -16,6 +17,7 @@ await migrate(db, { migrationsFolder: './drizzle' })
 
 const app = new Elysia()
   .use(cors())
+  .use(openapi({ path: '/docs', documentation: {info: {title: 'Groov API', version: '0.0.1'}} }))
   .use(taskRouter)
   .use(songRouter)
   .use(artistRouter)

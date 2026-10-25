@@ -2,7 +2,7 @@ import Elysia from "elysia";
 import { AlbumService } from "./service";
 import { albumQuerySchema } from "./schema";
 
-export const albumRouter = new Elysia({ prefix: 'albums' })
+export const albumRouter = new Elysia({ prefix: 'albums', tags: ['Albums']})
     .get('', async ({ query }) => {
         const albums = await AlbumService.getAll({
             field: query.sortField,

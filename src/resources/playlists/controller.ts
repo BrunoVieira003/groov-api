@@ -2,7 +2,7 @@ import Elysia, { status } from "elysia";
 import { addSongSchema, changePlaylistCoverSchema, createPlaylistSchema, removeSongSchema, reorderPlaylistSchema, updatePlaylistSchema } from "./schema";
 import { PlaylistService } from "./service";
 
-export const playlistRouter = new Elysia({prefix: 'playlists'})
+export const playlistRouter = new Elysia({prefix: 'playlists', tags: ['Playlists']})
     .post('', async ({body}) => {
         const playlist = await PlaylistService.create(body.title)
         return playlist

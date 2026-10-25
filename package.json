@@ -15,6 +15,7 @@
     "scan": "./src/bin/scan.ts"
   },
   "dependencies": {
+    "@elysia/openapi": "^1.4.16",
     "@elysiajs/cors": "^1.4.2",
     "bunqueue": "^2.8.8",
     "drizzle-orm": "^0.45.2",

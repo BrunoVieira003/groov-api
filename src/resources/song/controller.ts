@@ -7,7 +7,7 @@ import { filesDir } from "../../lib/constants";
 import { readFileQueue } from "../../lib/queues/read-file";
 import { createReadStream } from "node:fs";
 
-export const songRouter = new Elysia({ prefix: '/songs' })
+export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
     .get('', async ({ query }) => {
         const songs = await SongService.getAll({
             field: query.sortField,

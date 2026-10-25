@@ -5,7 +5,7 @@ import { artists } from "../../database/schema";
 import ArtistService from "./service";
 import { artistQuerySchema } from "./schema";
 
-export const artistRouter = new Elysia({ prefix: '/artists' })
+export const artistRouter = new Elysia({ prefix: '/artists', tags: ['Artists'] })
     .get('', async ({ query }) => {
         const artists = await ArtistService.getAll({
             field: query.sortField,
