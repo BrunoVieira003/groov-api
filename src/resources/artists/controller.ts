@@ -13,12 +13,12 @@ export const artistRouter = new Elysia({ prefix: '/artists', tags: ['Artists'] }
         })
 
         return { artists }
-    }, { query: artistQuerySchema })
+    }, { query: artistQuerySchema, detail: {summary: 'Get artists'} })
 
     .get('/:id', async ({ params }) => {
         const artist = ArtistService.getById(params.id)
         return artist
-    })
+    }, {detail: {summary: 'Get artist by id'}})
 
     .get('/:id/cover', async ({ params, set }) => {
         const songFile = await ArtistService.getCoverByArtistId(params.id)
@@ -26,4 +26,4 @@ export const artistRouter = new Elysia({ prefix: '/artists', tags: ['Artists'] }
         set.headers["content-type"] = songFile.type
 
         return songFile
-    })
+    }, {detail: {summary: 'Get artist cover by id'}})

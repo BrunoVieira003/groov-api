@@ -14,7 +14,7 @@ export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
             order: query.sortOrder
         })
         return { songs }
-    }, { query: songQuerySchema })
+    }, { query: songQuerySchema, detail: {summary: 'Get songs'} })
 
     .get('/:id', async ({ params, set, headers }) => {
         const songFile = await SongService.getSongFileById(params.id)
@@ -38,7 +38,7 @@ export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
         set.headers["Content-Length"] = `${end - start + 1}`
 
         return createReadStream(songFile.name || '', { start, end })
-    }, { headers: RangeHeaderSchema })
+    }, { headers: RangeHeaderSchema, detail: {summary: 'Get song file'} })
 
     .get('/:id/cover', async ({ params, set }) => {
         const songFile = await SongService.getCoverBySongId(params.id)
@@ -47,19 +47,19 @@ export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
 
         return songFile
 
-    })
+    }, { detail: {summary: 'Get song cover'} })
 
     .get('/:id/stat', async ({ params }) => {
         const song = await SongService.getSongById(params.id)
 
         return { song }
-    })
+    }, { detail: {summary: 'Get song data'} })
 
     .get('/:id/lyrics', async ({ params, set }) => {
         const lyrics = await SongService.getSongLyricsById(params.id)
 
         return lyrics
-    })
+    }, { detail: {summary: 'Get song lyrics'} })
 
     .post('/upload', async ({ body }) => {
         const file = body.file
@@ -71,4 +71,4 @@ export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
         const job = await readFileQueue.add('read-file', { filename })
 
         return { taskId: job.id }
-    }, { body: uploadBodySchema })
+    }, { body: uploadBodySchema, detail: {summary: 'Upload new song'} })
