@@ -1,14 +1,17 @@
 services:
   api:
     image: groov-api:sqlite
+    build: .
     ports:
       - 3000:3000
-    enviroment:
-      - DATABASE_URL: ./groov.db
+    environment:
+      DATABASE_URL: /app/data/groov.db
     volumes:
+      - data:/app/data
       - assets:/app/assets
       - music:/app/music
     restart: unless-stopped
 volumes:
+  data:
   assets:
   music:

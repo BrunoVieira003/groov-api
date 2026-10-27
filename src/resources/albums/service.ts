@@ -1,4 +1,4 @@
-import { and, eq, ilike, sql } from "drizzle-orm"
+import { and, eq, like, sql } from "drizzle-orm"
 import { db } from "../../database"
 import { albums, artists, songs, songsToArtists } from "../../database/schema"
 import { file, NotFoundError } from "elysia"
@@ -95,7 +95,7 @@ export class AlbumService {
 
     static async search(title: string) {
         const albumList = await db.query.albums.findMany({
-            where: ilike(albums.title, `%${title}%`),
+            where: like(albums.title, `%${title}%`),
         })
 
         const result = albumList.map((album) => {

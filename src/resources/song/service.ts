@@ -2,7 +2,7 @@ import { file, NotFoundError } from "elysia";
 import { db } from "../../database";
 import path from 'node:path';
 import fs from 'node:fs';
-import { eq, ilike } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import { albums, songs } from "../../database/schema";
 import { filesDir, imagesDir } from "../../lib/constants";
 import { SortOptions } from "../../lib/types";
@@ -62,13 +62,13 @@ export default class SongService {
     static async getSongLyricsById(id: string) {
         const song = await db.query.songs.findFirst({ where: eq(songs.id, id) })
         if (!song) {
-            return new NotFoundError('Song not found')
+            throw new NotFoundError('Song not found')
         }
 
-        const extension = song.filename.slice(song.filename.lastIndexOf('.') + 1)
+        const basePath = song.filename.slice(0, song.filename.length - path.extname(song.filename).length)
         let lyricFilepath: string | undefined
         for (let ext of ['txt', 'lrc']) {
-            const filepath = path.join(filesDir, song.filename.replace(extension, ext))
+            const filepath = path.join(filesDir, `${basePath}.${ext}`)
             if (fs.existsSync(filepath)) {
                 lyricFilepath = filepath
                 break
@@ -76,13 +76,12 @@ export default class SongService {
         }
 
         if (!lyricFilepath) {
-            return new NotFoundError('No lyric file found for this song')
+            throw new NotFoundError('No lyric file found for this song')
         }
 
-        const lyricsText = await Bun.file(lyricFilepath).text()
-
-        lyricsText.replaceAll('\r', '')
-        lyricsText.replaceAll(lyricHeaderRegex, '')
+        const lyricsText = (await Bun.file(lyricFilepath).text())
+            .replaceAll('\r', '')
+            .replaceAll(lyricHeaderRegex, '')
 
         const synced = lyricsText.split('\n').find(line => line.trim().match(lyricLineRegex)) ? true : false
 
@@ -126,7 +125,7 @@ export default class SongService {
         })
 
         if (!song) {
-            return new NotFoundError("Song not found")
+            throw new NotFoundError("Song not found")
         }
 
         return {
@@ -168,7 +167,7 @@ export default class SongService {
 
     static async search(title: string) {
         const songList = await db.query.songs.findMany({
-            where: ilike(songs.title, `%${title}%`),
+            where: like(songs.title, `%${title}%`),
             with: {
                 album: {
                     columns: {

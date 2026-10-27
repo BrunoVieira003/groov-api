@@ -2,7 +2,7 @@ import { t } from "elysia";
 
 export const uploadBodySchema = t.Object({
     file: t.File({
-        type: 'audio/mpeg'
+        type: ['audio/mpeg', 'audio/flac', 'audio/x-flac']
     })
 })
 

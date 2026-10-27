@@ -1,11 +1,11 @@
-import Elysia, { ElysiaFile, file } from "elysia";
+import Elysia, { status } from "elysia";
 import SongService from "./service";
 import { RangeHeaderSchema, songQuerySchema, uploadBodySchema } from "./schema";
 import { write } from "bun";
 import path from "node:path"
-import { filesDir } from "../../lib/constants";
+import { filesDir, supportedFileFormats } from "../../lib/constants";
 import { readFileQueue } from "../../lib/queues/read-file";
-import { createReadStream } from "node:fs";
+import { createReadStream, existsSync } from "node:fs";
 
 export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
     .get('', async ({ query }) => {
@@ -28,8 +28,23 @@ export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
         }
 
         const [_, startStr, endStr] = /bytes=(\d*)-(\d*)/.exec(range) ?? []
-        const start = startStr ? Number(startStr) : 0
-        const end = endStr ? Number(endStr) : size - 1
+
+        let start: number
+        let end: number
+        if (!startStr && endStr) {
+            // suffix range: last N bytes
+            start = Math.max(size - Number(endStr), 0)
+            end = size - 1
+        } else {
+            start = startStr ? Number(startStr) : 0
+            end = endStr ? Math.min(Number(endStr), size - 1) : size - 1
+        }
+
+        if (start >= size || start > end) {
+            set.status = 416
+            set.headers["Content-Range"] = `bytes */${size}`
+            return
+        }
 
         set.status = 206
         set.headers["Content-Type"] = songFile.type
@@ -63,9 +78,18 @@ export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
 
     .post('/upload', async ({ body }) => {
         const file = body.file
-        const filename = body.file.name
+        const filename = path.basename(body.file.name)
+
+        const extension = path.extname(filename).slice(1).toLowerCase()
+        if (!supportedFileFormats.includes(extension)) {
+            return status(415, { message: `Unsupported file format. Supported: ${supportedFileFormats.join(', ')}` })
+        }
 
         const filepath = path.join(filesDir, filename)
+        if (existsSync(filepath)) {
+            return status(409, { message: 'A file with this name already exists' })
+        }
+
         await write(filepath, file)
 
         const job = await readFileQueue.add('read-file', { filename })
