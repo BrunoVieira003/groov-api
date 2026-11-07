@@ -3,7 +3,7 @@ import { filesDir, imagesDir } from "../constants";
 import { IPicture, parseFile } from "music-metadata";
 import path from 'node:path'
 import { Vibrant } from "node-vibrant/node";
-import { albums, artists, songs, songsToArtists } from "../../database/schema";
+import { albums, artists, Palette, songs, songsToArtists } from "../../database/schema";
 import { db } from "../../database";
 import { and, eq } from "drizzle-orm";
 import { existsSync } from "node:fs";
@@ -26,52 +26,29 @@ function getPicture(picture: IPicture[] | undefined) {
     }
 }
 
-async function saveImage(cover: IPicture, id: string, category: ImageCategory, override: boolean = true) {
+async function saveCover(cover: IPicture, id: string, category: ImageCategory, override: boolean = true) {
     const picturePath = path.join(imagesDir, category, `${id}.webp`)
     const shouldSave = override || !existsSync(picturePath)
-    console.log('shouldSave', shouldSave)
 
     if (!shouldSave) return;
 
     await new Bun.Image(cover.data)
-        .webp({ lossless: true })
+        .webp({ quality: 85 })
         .write(picturePath)
 
 }
 
-async function updateSongPalette(cover: IPicture, songId: string) {
-    const palette = await Vibrant.from(Buffer.from(cover.data)).getPalette()
-
+async function updateSongPalette(songId: string, palette: Palette) {
     await db
         .update(songs)
-        .set({
-            colors: {
-                vibrant: palette.Vibrant?.hex,
-                darkVibrant: palette.DarkVibrant?.hex,
-                lightVibrant: palette.LightVibrant?.hex,
-                muted: palette.Muted?.hex,
-                darkMuted: palette.DarkMuted?.hex,
-                lightMuted: palette.LightMuted?.hex,
-            }
-        })
+        .set({ colors: palette })
         .where(eq(songs.id, songId))
 }
 
-async function updateAlbumPalette(cover: IPicture, albumId: string) {
-    const palette = await Vibrant.from(Buffer.from(cover.data)).getPalette()
-
+async function updateAlbumPalette(albumId: string, palette: Palette) {
     await db
         .update(albums)
-        .set({
-            colors: {
-                vibrant: palette.Vibrant?.hex,
-                darkVibrant: palette.DarkVibrant?.hex,
-                lightVibrant: palette.LightVibrant?.hex,
-                muted: palette.Muted?.hex,
-                darkMuted: palette.DarkMuted?.hex,
-                lightMuted: palette.LightMuted?.hex,
-            }
-        })
+        .set({ colors: palette })
         .where(eq(albums.id, albumId))
 }
 
@@ -123,8 +100,8 @@ async function saveSong(filename: string, title: string, year: number | null = n
     const song = await db.query.songs.findFirst({ where: eq(songs.filename, filename) })
     if (song) {
         song.title = title,
-            song.year = year,
-            song.duration = duration
+        song.year = year,
+        song.duration = duration
         song.fingerprint = hash
 
         await db
@@ -242,8 +219,9 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 .onConflictDoNothing()
         }
 
+        let album: Awaited<ReturnType<typeof saveAlbum> >| undefined
         if (metadata.common.album) {
-            const album = await saveAlbum(metadata.common.album)
+            album = await saveAlbum(metadata.common.album)
             console.log('- Album', album.title)
             
             await db.update(songs)
@@ -261,21 +239,29 @@ export const readFileQueue = new Bunqueue<ReadFileJobData>('read-file', {
                 console.log('- Alb. Artists', songArtists.map(a => a.name))
                 await addAlbumArtist(album.id, songArtists[0].id)
             }
-            
-            const picture = getPicture(metadata.common.picture)
-            if (picture) {
-                await saveImage(picture, album.id, 'album', false)
-                await updateAlbumPalette(picture, album.id)
-            }
         }
 
         const picture = getPicture(metadata.common.picture)
-        console.log('picture', !!picture)
         if (picture) {
-            await saveImage(picture, song.id, 'song')
-            await updateSongPalette(picture, song.id)
+            const vibrantPalette = await Vibrant.from(Buffer.from(picture.data)).getPalette()
+            const palette: Palette = {
+                vibrant: vibrantPalette.Vibrant?.hex,
+                lightVibrant: vibrantPalette.LightVibrant?.hex,
+                darkVibrant: vibrantPalette.DarkVibrant?.hex,
+                muted: vibrantPalette.Muted?.hex,
+                darkMuted: vibrantPalette.DarkMuted?.hex,
+                lightMuted: vibrantPalette.LightMuted?.hex
+            }
+            await saveCover(picture, song.id, 'song')
+            await updateSongPalette(song.id, palette)
+
+            if(album){
+                await saveCover(picture, album.id, 'album', false)
+                await updateAlbumPalette(album.id, palette)
+            }
+
             for (let art of songArtists) {
-                await saveImage(picture, art.id, 'artist')
+                await saveCover(picture, art.id, 'artist')
             }
         }
     }
