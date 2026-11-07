@@ -1,27 +1,21 @@
 import { and, eq, like, sql } from "drizzle-orm"
 import { db } from "../../database"
 import { albums, artists, songs, songsToArtists } from "../../database/schema"
-import { file, NotFoundError } from "elysia"
+import { NotFoundError } from "elysia"
 import path from "node:path"
-import fs from "node:fs"
 import { imagesDir } from "../../lib/constants"
 import { SortOptions } from "../../lib/types"
 
 type AlbumSortOptions = SortOptions<typeof albums>
 
 export class AlbumService {
-    static async getCoverByAlbumId(id: string) {
+    static async getCoverPathByAlbumId(id: string) {
         const album = await db.query.albums.findFirst({ where: eq(albums.id, id) })
         if (!album) {
             throw new NotFoundError('Album not found')
         }
 
-        const filepath = path.join(imagesDir, 'album', `${album.id}.webp`)
-        if (!fs.existsSync(filepath)) {
-            throw new NotFoundError('Cover art file not found')
-        }
-
-        return file(filepath)
+        return path.join(imagesDir, 'album', `${album.id}.webp`)
     }
 
     static async getAll(sort: AlbumSortOptions) {

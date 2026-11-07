@@ -1,10 +1,9 @@
 import { and, eq, like } from "drizzle-orm";
 import { db } from "../../database";
 import { playlists, songs, songsToPlaylists } from "../../database/schema";
-import { file, NotFoundError } from "elysia";
+import { NotFoundError } from "elysia";
 import { existsSync } from 'fs'
 import path from "path";
-import fs from "node:fs"
 import { imagesDir } from "../../lib/constants";
 
 interface UpdatePlaylist {
@@ -70,18 +69,13 @@ export class PlaylistService {
         return result
     }
 
-    static async getCoverByPlaylistId(id: string) {
+    static async getCoverPathByPlaylistId(id: string) {
         const playlist = await db.query.playlists.findFirst({ where: eq(playlists.id, id) })
         if (!playlist) {
             throw new NotFoundError('Playlist not found')
         }
 
-        const filepath = path.join(imagesDir, 'playlist', `${playlist.id}.webp`)
-        if (!fs.existsSync(filepath)) {
-            throw new NotFoundError('Cover art file not found')
-        }
-
-        return file(filepath)
+        return path.join(imagesDir, 'playlist', `${playlist.id}.webp`)
     }
 
     static async update(playlistId: string, data: UpdatePlaylist) {

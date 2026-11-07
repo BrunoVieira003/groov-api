@@ -1,6 +1,7 @@
 import Elysia from "elysia";
 import { AlbumService } from "./service";
 import { albumQuerySchema } from "./schema";
+import { coverHeadersSchema, coverResponse } from "../../lib/http";
 
 export const albumRouter = new Elysia({ prefix: 'albums', tags: ['Albums']})
     .get('', async ({ query }) => {
@@ -16,13 +17,10 @@ export const albumRouter = new Elysia({ prefix: 'albums', tags: ['Albums']})
         return album
     }, {detail: {summary: 'Get album by id'}})
 
-    .get('/:id/cover', async ({ params, set }) => {
-        const songFile = await AlbumService.getCoverByAlbumId(params.id)
-
-        set.headers["content-type"] = songFile.type
-
-        return songFile
-    }, {detail: {summary: 'Get album cover by id'}})
+    .get('/:id/cover', async ({ params, headers }) => {
+        const filepath = await AlbumService.getCoverPathByAlbumId(params.id)
+        return coverResponse(filepath, headers['if-none-match'])
+    }, {headers: coverHeadersSchema, detail: {summary: 'Get album cover by id'}})
 
     .get('/:id/featured', async ({params}) => {
         const artists = await AlbumService.getFeaturedArtists(params.id)

@@ -1,6 +1,9 @@
 {
   "name": "groov-api",
   "version": "1.0.50",
+  "engines": {
+    "bun": ">=1.4.4"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",

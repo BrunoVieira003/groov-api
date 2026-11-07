@@ -1,4 +1,4 @@
-import { file, NotFoundError } from "elysia";
+import { NotFoundError } from "elysia";
 import { db } from "../../database";
 import path from 'node:path';
 import fs from 'node:fs';
@@ -140,7 +140,7 @@ export default class SongService {
         }
     }
 
-    static async getCoverBySongId(id: string) {
+    static async getCoverPathBySongId(id: string) {
         const song = await db.query.songs.findFirst({ where: eq(songs.id, id) })
         if (!song) {
             throw new NotFoundError('Song not found')
@@ -162,7 +162,7 @@ export default class SongService {
             filepath = path.join(imagesDir, 'album', `${album.id}.webp`)
         }
 
-        return file(filepath)
+        return filepath
     }
 
     static async search(title: string) {

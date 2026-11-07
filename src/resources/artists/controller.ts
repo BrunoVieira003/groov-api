@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { artists } from "../../database/schema";
 import ArtistService from "./service";
 import { artistQuerySchema } from "./schema";
+import { coverHeadersSchema, coverResponse } from "../../lib/http";
 
 export const artistRouter = new Elysia({ prefix: '/artists', tags: ['Artists'] })
     .get('', async ({ query }) => {
@@ -20,10 +21,7 @@ export const artistRouter = new Elysia({ prefix: '/artists', tags: ['Artists'] }
         return artist
     }, {detail: {summary: 'Get artist by id'}})
 
-    .get('/:id/cover', async ({ params, set }) => {
-        const songFile = await ArtistService.getCoverByArtistId(params.id)
-
-        set.headers["content-type"] = songFile.type
-
-        return songFile
-    }, {detail: {summary: 'Get artist cover by id'}})
+    .get('/:id/cover', async ({ params, headers }) => {
+        const filepath = await ArtistService.getCoverPathByArtistId(params.id)
+        return coverResponse(filepath, headers['if-none-match'])
+    }, {headers: coverHeadersSchema, detail: {summary: 'Get artist cover by id'}})

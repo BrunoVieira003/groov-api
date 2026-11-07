@@ -1,6 +1,7 @@
 import Elysia, { status } from "elysia";
 import { addSongSchema, changePlaylistCoverSchema, createPlaylistSchema, removeSongSchema, reorderPlaylistSchema, updatePlaylistSchema } from "./schema";
 import { PlaylistService } from "./service";
+import { coverHeadersSchema, coverResponse } from "../../lib/http";
 
 export const playlistRouter = new Elysia({prefix: 'playlists', tags: ['Playlists']})
     .post('', async ({body}) => {
@@ -18,13 +19,10 @@ export const playlistRouter = new Elysia({prefix: 'playlists', tags: ['Playlists
         return playlists
     }, {detail: {summary: 'Get playlist by id'}})
 
-    .get('/:id/cover', async ({ params, set }) => {
-        const songFile = await PlaylistService.getCoverByPlaylistId(params.id)
-
-        set.headers["content-type"] = songFile.type
-
-        return songFile
-    }, {detail: {summary: 'Get album cover by id'}})
+    .get('/:id/cover', async ({ params, headers }) => {
+        const filepath = await PlaylistService.getCoverPathByPlaylistId(params.id)
+        return coverResponse(filepath, headers['if-none-match'])
+    }, {headers: coverHeadersSchema, detail: {summary: 'Get album cover by id'}})
 
     .patch(':id', async ({params, body}) => {
         await PlaylistService.update(params.id, body)

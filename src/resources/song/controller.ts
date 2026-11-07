@@ -4,8 +4,9 @@ import { RangeHeaderSchema, songQuerySchema, uploadBodySchema } from "./schema";
 import { write } from "bun";
 import path from "node:path"
 import { filesDir, supportedFileFormats } from "../../lib/constants";
+import { coverHeadersSchema, coverResponse, streamFile } from "../../lib/http";
 import { readFileQueue } from "../../lib/queues/read-file";
-import { createReadStream, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
     .get('', async ({ query }) => {
@@ -16,53 +17,15 @@ export const songRouter = new Elysia({ prefix: '/songs', tags: ['Songs'] })
         return { songs }
     }, { query: songQuerySchema, detail: {summary: 'Get songs'} })
 
-    .get('/:id', async ({ params, set, headers }) => {
+    .get('/:id', async ({ params, headers }) => {
         const songFile = await SongService.getSongFileById(params.id)
-        const size = songFile.size
-
-        const range = headers['range']
-        if (!range) {
-            set.headers["Content-Type"] = songFile.type
-            set.headers["Accept-Ranges"] = "bytes"
-            return createReadStream(songFile.name || '')
-        }
-
-        const [_, startStr, endStr] = /bytes=(\d*)-(\d*)/.exec(range) ?? []
-
-        let start: number
-        let end: number
-        if (!startStr && endStr) {
-            // suffix range: last N bytes
-            start = Math.max(size - Number(endStr), 0)
-            end = size - 1
-        } else {
-            start = startStr ? Number(startStr) : 0
-            end = endStr ? Math.min(Number(endStr), size - 1) : size - 1
-        }
-
-        if (start >= size || start > end) {
-            set.status = 416
-            set.headers["Content-Range"] = `bytes */${size}`
-            return
-        }
-
-        set.status = 206
-        set.headers["Content-Type"] = songFile.type
-        set.headers["Accept-Ranges"] = "bytes"
-        set.headers["Content-Range"] = `bytes ${start}-${end}/${size}`
-        set.headers["Content-Length"] = `${end - start + 1}`
-
-        return createReadStream(songFile.name || '', { start, end })
+        return streamFile(songFile, headers.range)
     }, { headers: RangeHeaderSchema, detail: {summary: 'Get song file'} })
 
-    .get('/:id/cover', async ({ params, set }) => {
-        const songFile = await SongService.getCoverBySongId(params.id)
-
-        set.headers["content-type"] = songFile.type
-
-        return songFile
-
-    }, { detail: {summary: 'Get song cover'} })
+    .get('/:id/cover', async ({ params, headers }) => {
+        const filepath = await SongService.getCoverPathBySongId(params.id)
+        return coverResponse(filepath, headers['if-none-match'])
+    }, { headers: coverHeadersSchema, detail: {summary: 'Get song cover'} })
 
     .get('/:id/stat', async ({ params }) => {
         const song = await SongService.getSongById(params.id)
